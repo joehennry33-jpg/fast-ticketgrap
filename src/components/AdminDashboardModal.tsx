@@ -34,6 +34,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
   const [eventStatus, setEventStatus] = useState(event.status);
   const [disclaimerText, setDisclaimerText] = useState(event.disclaimerText);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
+  const [adminErrorMsg, setAdminErrorMsg] = useState('');
 
   // Editable Categories
   const [editableCategories, setEditableCategories] = useState<TicketCategory[]>(categories);
@@ -76,7 +77,8 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
       setSaveSuccessMsg('Event configuration saved successfully!');
       setTimeout(() => setSaveSuccessMsg(''), 3000);
     } catch (err: any) {
-      alert('Failed to save event updates');
+      setAdminErrorMsg('Failed to save event updates. Please check your network.');
+      setTimeout(() => setAdminErrorMsg(''), 4000);
     }
   };
 
@@ -100,7 +102,8 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
       setSaveSuccessMsg('Ticket tier prices and quotas updated successfully!');
       setTimeout(() => setSaveSuccessMsg(''), 3000);
     } catch (err: any) {
-      alert('Failed to save category updates');
+      setAdminErrorMsg('Failed to save category updates. Please check your network.');
+      setTimeout(() => setAdminErrorMsg(''), 4000);
     }
   };
 
@@ -155,6 +158,12 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
             <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 bg-emerald-950/40 px-3 py-1.5 rounded-lg border border-emerald-500/30">
               <CheckCircle2 className="h-4 w-4" />
               <span>{saveSuccessMsg}</span>
+            </div>
+          )}
+          {adminErrorMsg && (
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-red-400 bg-red-950/40 px-3 py-1.5 rounded-lg border border-red-500/30">
+              <AlertCircle className="h-4 w-4" />
+              <span>{adminErrorMsg}</span>
             </div>
           )}
         </div>

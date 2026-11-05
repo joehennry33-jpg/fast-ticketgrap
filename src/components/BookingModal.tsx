@@ -46,6 +46,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [stkPushActive, setStkPushActive] = useState(false);
   const [stkCountdown, setStkCountdown] = useState(15);
   const [currentBooking, setCurrentBooking] = useState<Booking | null>(null);
+  const [globalError, setGlobalError] = useState<string>('');
 
   if (!isOpen) return null;
 
@@ -55,6 +56,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   // Validate Step 1
   const handleProceedToReview = (e: React.FormEvent) => {
     e.preventDefault();
+    setGlobalError('');
     const errors: { [key: string]: string } = {};
 
     if (!customerName.trim()) errors.name = 'Full name is required';
@@ -80,6 +82,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   // Step 2: Confirm Order & Go to Payment
   const handleProceedToPayment = async () => {
     setIsProcessing(true);
+    setGlobalError('');
     try {
       const booking = await api.createBooking({
         customerName,
@@ -91,7 +94,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       setCurrentBooking(booking);
       setStep(3);
     } catch (err: any) {
-      alert(err.message || 'Failed to create booking');
+      setGlobalError(err?.message || 'Unable to reserve seats. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -101,6 +104,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const handlePayNow = async () => {
     if (!currentBooking) return;
     setIsProcessing(true);
+    setGlobalError('');
 
     if (paymentMethod === 'MPESA_STK_PUSH') {
       try {
@@ -121,7 +125,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         }, 1000);
       } catch (err: any) {
         setIsProcessing(false);
-        alert(err.message || 'M-PESA STK Push failed to initiate');
+        setGlobalError(err?.message || 'M-PESA STK Push could not be initiated.');
       }
     } else {
       // Card or Manual Paybill
@@ -162,7 +166,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     } catch (err: any) {
       setIsProcessing(false);
       setStkPushActive(false);
-      alert(err.message || 'Payment confirmation failed');
+      setGlobalError(err?.message || 'Payment confirmation encountered an issue.');
     }
   };
 
@@ -201,6 +205,23 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             ))}
           </div>
         </div>
+
+        {/* Global Error Banner */}
+        {globalError && (
+          <div className="mb-5 rounded-xl border border-red-500/40 bg-red-950/40 p-3.5 text-xs text-red-200 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-red-400 shrink-0" />
+              <span>{globalError}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setGlobalError('')}
+              className="text-red-400 hover:text-white text-xs px-2 py-0.5 rounded"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
 
         {/* STEP 1: CATEGORY SELECTION & ATTENDEE FORM */}
         {step === 1 && (
