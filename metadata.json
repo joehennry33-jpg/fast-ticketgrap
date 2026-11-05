@@ -1,0 +1,6 @@
+{
+  "name": "KickPass Kenya - Ajax vs Bayern Munich Match Ticketing",
+  "description": "Kenya's premier football event ticketing platform featuring Ajax Amsterdam vs Bayern Munich at Talanta Sports City Stadium, Nairobi. Official ticket booking, M-PESA STK Push payments, and electronic QR tickets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

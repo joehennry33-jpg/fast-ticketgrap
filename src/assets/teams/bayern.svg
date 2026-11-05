@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <!-- FC Bayern Munich Official Crest Representation -->
+  <defs>
+    <!-- Bavarian Blue and White Rhombus Pattern -->
+    <pattern id="bavarianRauten" width="22" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">
+      <rect width="22" height="18" fill="#FFFFFF"/>
+      <polygon points="0,9 11,0 22,9 11,18" fill="#0066B2"/>
+    </pattern>
+    <filter id="bayernShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Outer Circle Border -->
+  <circle cx="100" cy="100" r="96" fill="#DC052D" stroke="#0066B2" stroke-width="4" filter="url(#bayernShadow)" />
+  <circle cx="100" cy="100" r="92" fill="#DC052D" stroke="#FFFFFF" stroke-width="3" />
+
+  <!-- White Ring Band for Text -->
+  <circle cx="100" cy="100" r="85" fill="#FFFFFF" />
+  <circle cx="100" cy="100" r="62" fill="#DC052D" />
+
+  <!-- Inner Bavarian Center Circle -->
+  <circle cx="100" cy="100" r="54" fill="url(#bavarianRauten)" stroke="#0066B2" stroke-width="2.5" />
+
+  <!-- Ring Text: FC BAYERN MÜNCHEN -->
+  <!-- Top: FC BAYERN -->
+  <path id="bayernTopArc" d="M 28 100 A 72 72 0 1 1 172 100" fill="none" />
+  <text font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="14.5" font-weight="900" fill="#DC052D" letter-spacing="2">
+    <textPath href="#bayernTopArc" startOffset="50%" text-anchor="middle">FC BAYERN</textPath>
+  </text>
+
+  <!-- Bottom: MÜNCHEN -->
+  <path id="bayernBottomArc" d="M 172 100 A 72 72 0 0 1 28 100" fill="none" />
+  <text font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="13" font-weight="900" fill="#0066B2" letter-spacing="2.5">
+    <textPath href="#bayernBottomArc" startOffset="50%" text-anchor="middle">MÜNCHEN</textPath>
+  </text>
+  
+  <!-- Side stars/dividers in the text ring -->
+  <circle cx="30" cy="98" r="2.5" fill="#0066B2" />
+  <circle cx="170" cy="98" r="2.5" fill="#0066B2" />
+</svg>
