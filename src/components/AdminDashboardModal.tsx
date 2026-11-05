@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, Settings, DollarSign, Users, Ticket, BarChart3, Edit3, Save, Download, RotateCcw, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { X, Settings, DollarSign, Users, Ticket, BarChart3, Edit3, Save, Download, RotateCcw, AlertCircle, CheckCircle2, Video } from 'lucide-react';
 import { MatchEvent, TicketCategory, Booking } from '../types';
 import { api } from '../services/api';
+import { AnimatedStadiumShowcase } from './AnimatedStadiumShowcase';
 
 interface AdminDashboardModalProps {
   isOpen: boolean;
@@ -22,7 +23,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
   onUpdateEvent,
   onUpdateCategories,
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'event' | 'categories' | 'bookings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'stadium' | 'event' | 'categories' | 'bookings'>('overview');
 
   // Form states for Event
   const [eventTitle, setEventTitle] = useState(event.title);
@@ -169,7 +170,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-1 border-b border-slate-800 pb-3 mb-6">
+        <div className="flex flex-wrap items-center gap-1 border-b border-slate-800 pb-3 mb-6">
           <button
             onClick={() => setActiveTab('overview')}
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors ${
@@ -177,6 +178,16 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
             }`}
           >
             Sales & Revenue Analytics
+          </button>
+          <button
+            onClick={() => setActiveTab('stadium')}
+            className={`flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg transition-colors ${
+              activeTab === 'stadium' ? 'bg-red-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <span className="h-2 w-2 rounded-full bg-red-400 animate-ping inline-block" />
+            <Video className="h-3.5 w-3.5 text-amber-400" />
+            <span>Talanta Stadium Live Feeds</span>
           </button>
           <button
             onClick={() => setActiveTab('event')}
@@ -204,9 +215,75 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
           </button>
         </div>
 
+        {/* TAB: STADIUM LIVE MONITOR (TALANTA STADIUM ANIMATED IMAGES) */}
+        {activeTab === 'stadium' && (
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-900/80 p-4 rounded-xl border border-slate-800">
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-red-400">
+                  Official Venue Surveillance & Visual Monitor
+                </div>
+                <h3 className="text-base font-bold text-white">
+                  Raila Odinga International Stadium (Talanta Stadium) · Nairobi
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  High-definition live multi-angle perspective feeds covering exterior architecture, hybrid pitch bowl, VVIP suites, and 2,400 Lux floodlights.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs font-mono font-semibold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-3 py-1.5 rounded-lg">
+                  60,000 All-Seater · Online
+                </span>
+              </div>
+            </div>
+
+            {/* Actual Animated Talanta Stadium Showcase Component */}
+            <AnimatedStadiumShowcase className="shadow-2xl" />
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div className="p-3.5 bg-slate-900/60 rounded-xl border border-slate-800">
+                <div className="text-slate-400 font-medium">Turf Specification</div>
+                <div className="font-bold text-white mt-1">FIFA Category 4 Hybrid Grass</div>
+                <div className="text-[11px] text-slate-500 mt-0.5">Underground capillary drainage</div>
+              </div>
+              <div className="p-3.5 bg-slate-900/60 rounded-xl border border-slate-800">
+                <div className="text-slate-400 font-medium">Kickoff Lighting</div>
+                <div className="font-bold text-white mt-1">2,400 Lux LED Array</div>
+                <div className="text-[11px] text-slate-500 mt-0.5">Optically calibrated for 8:15 PM EAT</div>
+              </div>
+              <div className="p-3.5 bg-slate-900/60 rounded-xl border border-slate-800">
+                <div className="text-slate-400 font-medium">Security Turnstiles</div>
+                <div className="font-bold text-emerald-400 mt-1">100% Optical QR Scanners</div>
+                <div className="text-[11px] text-slate-500 mt-0.5">Fast-track NFC & 2D barcode gates</div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* TAB 1: OVERVIEW METRICS */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
+            {/* Quick Stadium Status preview widget with animated feed */}
+            <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
+                  <span className="text-xs font-bold text-white uppercase tracking-wider">
+                    Raila Odinga International Stadium (Talanta Stadium) · Live Venue Perspective
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('stadium')}
+                  className="text-[11px] font-semibold text-red-400 hover:text-red-300 flex items-center gap-1 cursor-pointer"
+                >
+                  <span>Expand 4-Cam Monitor</span>
+                  <span>→</span>
+                </button>
+              </div>
+              <AnimatedStadiumShowcase className="max-h-72" showDetails={false} />
+            </div>
+
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-4">
                 <div className="text-xs text-slate-400 mb-1">Confirmed Revenue</div>

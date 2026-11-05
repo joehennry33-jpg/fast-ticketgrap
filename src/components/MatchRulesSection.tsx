@@ -17,7 +17,7 @@ export const MatchRulesSection: React.FC<MatchRulesSectionProps> = ({ rules }) =
             MATCH RULES & ENTRY REQUIREMENTS
           </h2>
           <p className="mt-2 text-xs sm:text-sm text-slate-400">
-            Please review the official Talanta Sports City Stadium entry conditions before arriving on matchday.
+            Please review the official Raila Odinga International Stadium (Talanta Stadium) entry conditions before arriving on matchday.
           </p>
         </div>
 
@@ -69,7 +69,7 @@ export const MatchRulesSection: React.FC<MatchRulesSectionProps> = ({ rules }) =
             <div className="mt-6 rounded-xl border border-amber-500/30 bg-amber-950/20 p-3.5 flex items-center gap-3 text-xs text-amber-200">
               <Clock className="h-5 w-5 text-amber-400 shrink-0" />
               <span>
-                <strong>Turnstiles Cut-off:</strong> Gates close exactly 30 minutes before kickoff (16:30 EAT). Arrive early to enjoy pre-match music and stadium warm-ups!
+                <strong>Turnstiles Cut-off:</strong> Gates open at 11:00 AM and close strictly 30 minutes before kickoff (7:45 PM Kenyan time). Arrive early to enjoy stadium fan zones!
               </span>
             </div>
           </div>

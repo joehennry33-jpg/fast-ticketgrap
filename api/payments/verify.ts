@@ -31,8 +31,8 @@ export default function handler(req: any, res: any) {
           bookingId: `bkg-${Date.now()}`,
           categoryId: 'cat-vip',
           categoryName: 'VIP Main Stand',
-          eventId: 'event-ajax-bayern-nairobi',
-          eventTitle: 'Ajax Amsterdam vs Bayern Munich – Kenya Football Spectacle',
+          eventId: 'event-bayern-ajax-nairobi',
+          eventTitle: 'Bayern Munich vs Ajax Amsterdam – Kenya Football Spectacle',
           attendeeName: body.customerName || 'Football Supporter',
           attendeePhone: body.mpesaPhone || '0712345678',
           seatIdentifier: 'VIP Main Stand - Tier 1, Row 12, Seat 24',
@@ -41,8 +41,8 @@ export default function handler(req: any, res: any) {
           securityHash: `sha256-auth-${Date.now()}`,
           status: 'ISSUED',
           priceKes: 12500,
-          eventDate: '2026-12-12T17:00:00.000Z',
-          venueName: 'Talanta Sports City Stadium',
+          eventDate: '2027-01-05T17:15:00.000Z',
+          venueName: 'Raila Odinga International Stadium (Talanta Stadium)',
           createdAt: new Date().toISOString()
         }
       ]

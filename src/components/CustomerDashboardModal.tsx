@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Ticket as TicketIcon, Calendar, Download, CheckCircle2, User, Phone, Mail, Receipt, ExternalLink } from 'lucide-react';
+import { X, Ticket as TicketIcon, Calendar, Download, CheckCircle2, User, Phone, Mail, Receipt, ExternalLink, Video } from 'lucide-react';
 import { Booking, Ticket } from '../types';
+import { AnimatedStadiumShowcase } from './AnimatedStadiumShowcase';
 
 interface CustomerDashboardModalProps {
   isOpen: boolean;
@@ -15,7 +16,7 @@ export const CustomerDashboardModal: React.FC<CustomerDashboardModalProps> = ({
   bookings,
   onViewTicket,
 }) => {
-  const [activeTab, setActiveTab] = useState<'tickets' | 'bookings' | 'profile'>('tickets');
+  const [activeTab, setActiveTab] = useState<'tickets' | 'stadium' | 'bookings' | 'profile'>('tickets');
   const [searchQuery, setSearchQuery] = useState('');
 
   if (!isOpen) return null;
@@ -53,7 +54,7 @@ export const CustomerDashboardModal: React.FC<CustomerDashboardModalProps> = ({
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-1 border-b border-slate-800 pb-3 mb-6">
+        <div className="flex flex-wrap items-center gap-1 border-b border-slate-800 pb-3 mb-6">
           <button
             onClick={() => setActiveTab('tickets')}
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors ${
@@ -63,6 +64,17 @@ export const CustomerDashboardModal: React.FC<CustomerDashboardModalProps> = ({
             }`}
           >
             My Electronic Tickets ({allTickets.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('stadium')}
+            className={`flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg transition-colors ${
+              activeTab === 'stadium'
+                ? 'bg-red-600 text-white'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <Video className="h-3.5 w-3.5 text-amber-400" />
+            <span>Talanta Stadium Live Perspectives</span>
           </button>
           <button
             onClick={() => setActiveTab('bookings')}
@@ -85,6 +97,24 @@ export const CustomerDashboardModal: React.FC<CustomerDashboardModalProps> = ({
             Account & Security
           </button>
         </div>
+
+        {/* TAB: STADIUM PERSPECTIVE FEEDS */}
+        {activeTab === 'stadium' && (
+          <div className="space-y-4">
+            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-red-500 mb-1">
+                Raila Odinga International Stadium (Talanta Stadium)
+              </div>
+              <h3 className="text-base font-bold text-white">
+                Venue Sightlines & Gate Entry Navigation
+              </h3>
+              <p className="text-xs text-slate-300 mt-1">
+                Gates open early at 11:00 AM. Kickoff is at 8:15 PM Kenyan time on Tuesday, 5 January 2027. Browse 360° architectural views and executive hospitality suites below:
+              </p>
+            </div>
+            <AnimatedStadiumShowcase />
+          </div>
+        )}
 
         {/* TAB 1: TICKETS */}
         {activeTab === 'tickets' && (

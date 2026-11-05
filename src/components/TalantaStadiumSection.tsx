@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { MapPin, Navigation, Car, Bus, Plane, CheckCircle2, Maximize2, X, Users, Sparkles, Shield } from 'lucide-react';
+import { MapPin, Navigation, Car, Bus, Plane, CheckCircle2, Maximize2, X, Users, Sparkles, Shield, Clock, Calendar } from 'lucide-react';
+import { AnimatedStadiumShowcase } from './AnimatedStadiumShowcase';
 
 interface TalantaStadiumSectionProps {
   onSelectCategoryFromMap?: (categoryId: string) => void;
@@ -11,7 +12,7 @@ export const TalantaStadiumSection: React.FC<TalantaStadiumSectionProps> = ({ on
   const stadiumGallery = [
     {
       id: 'ext-1',
-      title: 'Talanta Sports City Stadium - Aerial Architectural Render',
+      title: 'Raila Odinga International Stadium - Aerial Twilight Architecture',
       category: 'Exterior Architecture',
       src: '/src/assets/images/talanta_stadium_exterior_1793884338380.jpg',
       caption: 'Aerial rendering of the 60,000-seat flagship stadium along Ngong Road, Nairobi, highlighting its aerodynamic shield-inspired canopy roof.'
@@ -44,17 +45,37 @@ export const TalantaStadiumSection: React.FC<TalantaStadiumSectionProps> = ({ on
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-12">
+        <div className="text-center max-w-3xl mx-auto mb-10">
           <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-red-400 mb-2">
             <MapPin className="h-4 w-4 text-red-500" />
-            <span>Official Proposed Venue · Nairobi, Kenya</span>
+            <span>Official Venue · Raila Odinga International Stadium (Talanta Stadium), Nairobi</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
-            THE STAGE IS SET – TALANTA STADIUM
+            THE STAGE IS SET – RAILA ODINGA INTERNATIONAL STADIUM
           </h2>
-          <p className="mt-4 text-base text-slate-300">
-            Purpose-built to anchor Kenya’s sporting future and host AFCON 2027, Talanta Sports City Stadium is an ultra-modern 60,000-seat cathedral of football in the heart of Nairobi.
+          <p className="mt-3 text-base text-slate-300">
+            Purpose-built to host AFCON 2027 and world-class sporting showcases, this ultra-modern 60,000-seat cathedral of football along Ngong Road will host Bayern Munich vs Ajax Amsterdam on Tuesday, 5 January 2027.
           </p>
+
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-xs font-semibold">
+            <span className="flex items-center gap-1.5 rounded-full bg-red-600/30 border border-red-500/50 px-3 py-1 text-amber-300 font-bold">
+              <span className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
+              61 DAYS TO GO!
+            </span>
+            <span className="flex items-center gap-1.5 rounded-full bg-slate-900 border border-slate-800 px-3 py-1 text-slate-300">
+              <Calendar className="h-3.5 w-3.5 text-red-400" />
+              Tuesday, 5 January 2027
+            </span>
+            <span className="flex items-center gap-1.5 rounded-full bg-slate-900 border border-slate-800 px-3 py-1 text-slate-300">
+              <Clock className="h-3.5 w-3.5 text-emerald-400" />
+              Kick-off: 8:15 PM EAT (Gates Open: 11:00 AM)
+            </span>
+          </div>
+        </div>
+
+        {/* Live Multi-Camera Animated Stadium Showcase */}
+        <div className="mb-14">
+          <AnimatedStadiumShowcase />
         </div>
 
         {/* Stadium Architectural Showcase Grid */}

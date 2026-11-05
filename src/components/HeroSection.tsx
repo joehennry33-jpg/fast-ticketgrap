@@ -61,32 +61,34 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ event, onBookTickets, 
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-        {/* Match Header Label & Verified Tag */}
+        {/* Match Header Label & 61 Days Countdown Tag */}
         <div className="text-center max-w-3xl mx-auto mb-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-950/40 px-3.5 py-1 text-xs font-semibold text-red-300 backdrop-blur-sm mb-4">
-            <ShieldCheck className="h-3.5 w-3.5 text-red-400" />
-            <span>KENYA INTERNATIONAL FOOTBALL SHOWCASE · PROPOSED FLAGGSHIP EVENT</span>
+          <div className="inline-flex items-center gap-2 rounded-full border border-red-500/40 bg-red-950/70 px-4 py-1.5 text-xs font-black text-red-200 backdrop-blur-md mb-4 shadow-lg shadow-red-900/40">
+            <span className="flex h-2.5 w-2.5 rounded-full bg-red-500 animate-ping" />
+            <span className="text-amber-300 font-extrabold uppercase tracking-widest">61 DAYS TO GO!</span>
+            <span className="text-slate-400">·</span>
+            <span>TUESDAY, 5 JANUARY 2027</span>
           </div>
 
           <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl text-balance">
             {event.title}
           </h1>
-          <p className="mt-3 text-base sm:text-lg text-slate-300 max-w-2xl mx-auto">
-            Experience world-class European football royalty on African soil at the brand-new 60,000-seat Talanta Sports City Stadium, Nairobi.
+          <p className="mt-3 text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
+            Tuesday, 5 January 2027 at the new <strong className="text-white">Raila Odinga International Stadium (Talanta Stadium)</strong>, Nairobi. Gates open at <strong className="text-white">11:00 AM</strong> with kick-off at <strong className="text-white">8:15 PM Kenyan time</strong>.
           </p>
         </div>
 
-        {/* CLUBS SHOWDOWN - Left: Ajax, Center: VS & Countdown, Right: Bayern */}
+        {/* CLUBS SHOWDOWN - Left: Home Club, Center: VS & Countdown, Right: Away Club */}
         <div className="my-8 sm:my-12 rounded-2xl border border-slate-800/90 bg-slate-900/70 p-6 sm:p-10 backdrop-blur-md shadow-2xl">
           <div className="grid grid-cols-1 md:grid-cols-11 items-center gap-6 sm:gap-8">
             
-            {/* HOME CLUB: AJAX AMSTERDAM (Left) */}
+            {/* HOME CLUB (Left) */}
             <div className="md:col-span-4 flex flex-col items-center md:items-end text-center md:text-right group">
               <div className="relative mb-4 flex h-32 w-32 sm:h-40 sm:w-40 items-center justify-center rounded-2xl p-2 bg-gradient-to-br from-white/10 to-transparent border border-white/10 shadow-lg group-hover:scale-105 transition-transform">
                 <img
                   src={event.homeTeam.crestUrl}
-                  alt="AFC Ajax Amsterdam Official Club Crest"
-                  className="h-full w-full object-contain filter drop-shadow-[0_8px_16px_rgba(210,18,46,0.4)]"
+                  alt={`${event.homeTeam.name} Official Club Crest`}
+                  className="h-full w-full object-contain filter drop-shadow-[0_8px_16px_rgba(220,5,45,0.4)]"
                   referrerPolicy="no-referrer"
                 />
               </div>
@@ -94,10 +96,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ event, onBookTickets, 
                 {event.homeTeam.name}
               </h2>
               <p className="text-sm font-semibold text-red-400">
-                Amsterdam, Netherlands · 4x European Champions
+                {event.homeTeam.country} · {event.homeTeam.squadHighlights?.[0] || 'European Champions'}
               </p>
               <div className="mt-2 text-xs text-slate-400 hidden sm:block">
-                Total Football Heritage · Johan Cruyff Philosophy
+                {event.homeTeam.squadHighlights?.[1] || 'Elite Continental Heavyweights'}
               </div>
             </div>
 
@@ -109,15 +111,20 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ event, onBookTickets, 
                 </span>
               </div>
 
+              {/* 61 Days Countdown Notice */}
+              <div className="mt-4 inline-block rounded-md bg-red-600/20 border border-red-500/40 px-3 py-1 text-[11px] font-extrabold text-amber-300">
+                61 DAYS TO GO!
+              </div>
+
               {/* Countdown Grid */}
-              <div className="mt-6 w-full">
+              <div className="mt-3 w-full">
                 <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
-                  Kickoff Countdown
+                  Matchday Countdown (Kickoff 8:15 PM EAT)
                 </div>
                 <div className="grid grid-cols-4 gap-2 text-center">
                   <div className="rounded-lg bg-slate-950/80 border border-slate-800 p-2">
                     <div className="text-xl sm:text-2xl font-bold font-mono text-white tabular-nums">
-                      {String(timeLeft.days).padStart(2, '0')}
+                      {String(timeLeft.days || 61).padStart(2, '0')}
                     </div>
                     <div className="text-[10px] uppercase text-slate-400 font-semibold">Days</div>
                   </div>

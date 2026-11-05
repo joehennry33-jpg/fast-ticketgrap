@@ -1,17 +1,6 @@
 import { MatchEvent, Team, TicketCategory, Booking } from '../types';
 
 export const initialTeams: Record<string, Team> = {
-  ajax: {
-    id: 'team-ajax',
-    name: 'AFC Ajax Amsterdam',
-    shortName: 'AJAX',
-    country: 'Netherlands',
-    foundedYear: 1900,
-    crestUrl: '/src/assets/teams/ajax.svg',
-    primaryColor: '#D2122E',
-    secondaryColor: '#FFFFFF',
-    squadHighlights: ['European Champions (4x)', 'Legendary Total Football Heritage', 'World-Class Youth Academy']
-  },
   bayern: {
     id: 'team-bayern',
     name: 'FC Bayern Munich',
@@ -22,31 +11,42 @@ export const initialTeams: Record<string, Team> = {
     primaryColor: '#DC052D',
     secondaryColor: '#0066B2',
     squadHighlights: ['UEFA Champions League Winners (6x)', 'German Bundesliga Giants', 'Record-Breaking Treble Winners']
+  },
+  ajax: {
+    id: 'team-ajax',
+    name: 'AFC Ajax Amsterdam',
+    shortName: 'AJAX',
+    country: 'Netherlands',
+    foundedYear: 1900,
+    crestUrl: '/src/assets/teams/ajax.svg',
+    primaryColor: '#D2122E',
+    secondaryColor: '#FFFFFF',
+    squadHighlights: ['European Champions (4x)', 'Legendary Total Football Heritage', 'World-Class Youth Academy']
   }
 };
 
 export const initialEvent: MatchEvent = {
-  id: 'event-ajax-bayern-nairobi',
-  title: 'Ajax Amsterdam vs Bayern Munich – Kenya Football Spectacle',
-  slug: 'ajax-amsterdam-vs-bayern-munich-kenya',
-  homeTeam: initialTeams.ajax,
-  awayTeam: initialTeams.bayern,
-  eventDate: '2026-12-12T17:00:00.000Z',
-  kickoffTime: '17:00 EAT (Nairobi Time)',
-  gatesOpenTime: '13:00 EAT',
-  venueName: 'Talanta Sports City Stadium',
+  id: 'event-bayern-ajax-nairobi',
+  title: 'Bayern Munich vs Ajax Amsterdam – Kenya Football Spectacle',
+  slug: 'bayern-munich-vs-ajax-amsterdam-kenya-2027',
+  homeTeam: initialTeams.bayern,
+  awayTeam: initialTeams.ajax,
+  eventDate: '2027-01-05T17:15:00.000Z', // 8:15 PM EAT on Tuesday, 5 January 2027 (exactly 61 days from 5 Nov 2026)
+  kickoffTime: '8:15 PM (Kenyan time)',
+  gatesOpenTime: '11:00 AM (Kenyan time)',
+  venueName: 'Raila Odinga International Stadium (Talanta Stadium)',
   venueCity: 'Nairobi',
   venueCountry: 'Kenya',
   stadiumCapacity: 60000,
   status: 'CONFIRMED',
   isFlagship: true,
-  disclaimerText: 'PROPOSED EVENT DATE & VENUE: Subject to final scheduling validation and official authorization by match organizers, Football Kenya Federation (FKF), and participating clubs. All ticket bookings are backed by the 100% KickPass Money-Back Guarantee.',
+  disclaimerText: 'CONFIRMED EVENT: Scheduled for Tuesday, 5 January 2027 at the new Raila Odinga International Stadium (Talanta Stadium), Nairobi. Gates open early at 11:00 AM with kickoff at 8:15 PM Kenyan time. All ticket purchases protected by KickPass Kenya Guarantee.',
   bannerImageUrl: '/src/assets/images/hero_football_stadium_1793884336463.jpg',
-  description: 'In what promises to be the most historic football event hosted on East African soil, European football royalty AFC Ajax Amsterdam and FC Bayern Munich will clash in an exclusive friendly showcase at the newly inaugurated 60,000-seater Talanta Sports City Stadium in Nairobi. Witness continental champions, world-class tactics, and unforgettable matchday atmosphere live in Kenya.',
+  description: 'European champions clash in Nairobi! FC Bayern Munich take on AFC Ajax Amsterdam on Tuesday, 5 January 2027 at the state-of-the-art 60,000-seater Raila Odinga International Stadium (Talanta Stadium) along Ngong Road. Experience unforgettable matchday intensity under the stadium floodlights.',
   rulesAndEntry: [
     'Every attendee must present a valid, scannable KickPass QR electronic ticket (mobile screen or printed A4 page).',
     'Original National ID or Passport is required for verification at security turnstiles.',
-    'Gates open 4 hours prior to kickoff (13:00 EAT). Turnstiles close strictly 30 minutes before kickoff.',
+    'Stadium gates open at 11:00 AM Kenyan time. Turnstiles close strictly 30 minutes before the 8:15 PM kickoff.',
     'No weapons, pyrotechnics, glassware, or unauthorized commercial recording equipment permitted.',
     'Dedicated accessibility ramps and family hospitality bays are located at Gate D.'
   ]
@@ -55,7 +55,7 @@ export const initialEvent: MatchEvent = {
 export const initialCategories: TicketCategory[] = [
   {
     id: 'cat-vvip',
-    eventId: 'event-ajax-bayern-nairobi',
+    eventId: 'event-bayern-ajax-nairobi',
     name: 'VVIP Presidential Hospitality',
     code: 'VVIP',
     priceKes: 25000,
@@ -64,7 +64,7 @@ export const initialCategories: TicketCategory[] = [
     reservedQuota: 12,
     gateDesignation: 'Gate A (Presidential Pavilion)',
     seatingArea: 'Presidential Suites & Tier 1 Center Box',
-    description: 'The premier luxury football hospitality experience. Elevated midfield vantage point with luxury padded seating and elite networking.',
+    description: 'The premier luxury football hospitality experience at Raila Odinga Stadium. Elevated midfield vantage point with luxury padded seating and elite networking.',
     perks: [
       'Private valet parking with secure VIP badge',
       '5-course gourmet banquet & executive bar',
@@ -78,7 +78,7 @@ export const initialCategories: TicketCategory[] = [
   },
   {
     id: 'cat-vip',
-    eventId: 'event-ajax-bayern-nairobi',
+    eventId: 'event-bayern-ajax-nairobi',
     name: 'VIP Main Stand',
     code: 'VIP',
     priceKes: 12500,
@@ -100,7 +100,7 @@ export const initialCategories: TicketCategory[] = [
   },
   {
     id: 'cat-premium',
-    eventId: 'event-ajax-bayern-nairobi',
+    eventId: 'event-bayern-ajax-nairobi',
     name: 'Premium Lower Bowl',
     code: 'PREMIUM',
     priceKes: 5500,
@@ -122,7 +122,7 @@ export const initialCategories: TicketCategory[] = [
   },
   {
     id: 'cat-regular',
-    eventId: 'event-ajax-bayern-nairobi',
+    eventId: 'event-bayern-ajax-nairobi',
     name: 'Regular Upper Tier',
     code: 'REGULAR',
     priceKes: 2500,
@@ -143,7 +143,7 @@ export const initialCategories: TicketCategory[] = [
   },
   {
     id: 'cat-general',
-    eventId: 'event-ajax-bayern-nairobi',
+    eventId: 'event-bayern-ajax-nairobi',
     name: 'General Admission (Curva Nets)',
     code: 'GENERAL',
     priceKes: 1000,
@@ -152,7 +152,7 @@ export const initialCategories: TicketCategory[] = [
     reservedQuota: 350,
     gateDesignation: 'Gate G & H (North & South Curves)',
     seatingArea: 'Behind Goal Terraces (North & South Ends)',
-    description: 'The roaring heartbeat of the stadium. Stand shoulder-to-shoulder with thousands of passionate fans chanting throughout the 90 minutes.',
+    description: 'The roaring heartbeat of Raila Odinga Stadium. Stand shoulder-to-shoulder with thousands of passionate fans chanting throughout the 90 minutes.',
     perks: [
       'Unmatched chanting fan ultras atmosphere',
       'Direct view into goal nets and penalty boxes',
@@ -168,7 +168,7 @@ export const sampleBookings: Booking[] = [
   {
     id: 'bkg-demo-001',
     bookingReference: 'KP-NAI-78921',
-    eventId: 'event-ajax-bayern-nairobi',
+    eventId: 'event-bayern-ajax-nairobi',
     customerName: 'Brian Kipchoge',
     customerEmail: 'brian.k@gmail.com',
     customerPhone: '0712345678',

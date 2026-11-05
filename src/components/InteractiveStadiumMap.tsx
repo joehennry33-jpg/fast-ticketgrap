@@ -22,7 +22,7 @@ export const InteractiveStadiumMap: React.FC<InteractiveStadiumMapProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h3 className="text-xl font-bold text-white flex items-center gap-2">
-            <span>Talanta Stadium Interactive Seating Map</span>
+            <span>Raila Odinga International Stadium (Talanta Stadium) Interactive Seating Map</span>
           </h3>
           <p className="text-xs text-slate-400">
             Click on any stadium stand or section below to preview sightlines, gate entrances, and select tickets.

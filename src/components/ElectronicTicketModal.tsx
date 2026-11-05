@@ -102,21 +102,21 @@ export const ElectronicTicketModal: React.FC<ElectronicTicketModalProps> = ({ is
 
     ctx.fillStyle = '#94a3b8';
     ctx.font = '600 13px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText('OFFICIAL DIGITAL MATCH PASS · TALANTA SPORTS CITY STADIUM', 108, 92);
+    ctx.fillText('OFFICIAL DIGITAL MATCH PASS · RAILA ODINGA INTERNATIONAL STADIUM', 108, 92);
 
     // Match Showdown Title
     ctx.fillStyle = '#ffffff';
     ctx.font = '900 34px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText('AFC AJAX vs FC BAYERN MUNICH', 50, 150);
+    ctx.fillText('FC BAYERN MUNICH vs AFC AJAX', 50, 150);
 
     // Event Date & Venue
     ctx.fillStyle = '#ef4444';
     ctx.font = '700 16px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText(`PROPOSED DATE: ${formattedDate.toUpperCase()} · KICKOFF 17:00 EAT`, 50, 185);
+    ctx.fillText(`DATE: ${formattedDate.toUpperCase()} · KICKOFF 8:15 PM EAT`, 50, 185);
 
     ctx.fillStyle = '#cbd5e1';
     ctx.font = '600 15px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText(`VENUE: ${ticket.venueName}, Nairobi, Kenya (Gates open 13:00 EAT)`, 50, 212);
+    ctx.fillText(`VENUE: ${ticket.venueName}, Nairobi (Gates open 11:00 AM)`, 50, 212);
 
     // Category Box
     ctx.fillStyle = '#1e293b';
