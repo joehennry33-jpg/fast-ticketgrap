@@ -3,13 +3,48 @@ import { initialEvent, initialCategories, sampleBookings } from '../data/initial
 
 const BASE_URL = '/api';
 
+// Check if running in a purely static frontend deployment (e.g. Vercel, GitHub Pages, Netlify)
+function isStaticHosting(): boolean {
+  if (typeof window === 'undefined') return false;
+  const host = window.location.hostname.toLowerCase();
+  return host.includes('vercel.app') || host.includes('github.io') || host.includes('netlify.app') || host.includes('surge.sh');
+}
+
+// Ultra-safe JSON fetcher: Reads text first to NEVER throw "Unexpected end of JSON input"
+async function safeFetchJson<T>(url: string, options?: RequestInit): Promise<T | null> {
+  // If deployed on Vercel or static CDN where standalone Express server is not running, skip immediately
+  if (isStaticHosting()) {
+    return null;
+  }
+
+  try {
+    const res = await fetch(url, options);
+    if (!res.ok) return null;
+
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) return null;
+
+    const text = await res.text();
+    if (!text || !text.trim()) return null;
+
+    try {
+      const parsed = JSON.parse(text);
+      return parsed;
+    } catch {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+}
+
 // Local storage keys for hybrid/standalone deployment (e.g. Vercel, Netlify, offline)
 const STORAGE_KEYS = {
-  EVENT: 'kickpass_event_v1',
-  CATEGORIES: 'kickpass_categories_v1',
-  BOOKINGS: 'kickpass_bookings_v1',
-  TICKETS: 'kickpass_tickets_v1',
-  LOGS: 'kickpass_verification_logs_v1'
+  EVENT: 'kickpass_event_v2',
+  CATEGORIES: 'kickpass_categories_v2',
+  BOOKINGS: 'kickpass_bookings_v2',
+  TICKETS: 'kickpass_tickets_v2',
+  LOGS: 'kickpass_verification_logs_v2'
 };
 
 // Helper to safely load from localStorage with initial fallback
@@ -138,40 +173,24 @@ if (typeof window !== 'undefined') {
 export const api = {
   // 1. GET EVENT
   async getEvent(id = 'flagship'): Promise<MatchEvent> {
-    try {
-      const res = await fetch(`${BASE_URL}/events/${id}`);
-      const contentType = res.headers.get('content-type');
-      if (res.ok && contentType && contentType.includes('application/json')) {
-        const json = await res.json();
-        if (json?.data) {
-          setLocalItem(STORAGE_KEYS.EVENT, json.data);
-          return json.data;
-        }
-      }
-    } catch (e) {
-      // Fall through to local store
+    const res = await safeFetchJson<{ data: MatchEvent }>(`${BASE_URL}/events/${id}`);
+    if (res?.data) {
+      setLocalItem(STORAGE_KEYS.EVENT, res.data);
+      return res.data;
     }
     return getLocalItem<MatchEvent>(STORAGE_KEYS.EVENT, initialEvent);
   },
 
   // 2. UPDATE EVENT
   async updateEvent(id: string, updates: Partial<MatchEvent>): Promise<MatchEvent> {
-    try {
-      const res = await fetch(`${BASE_URL}/events/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
-      });
-      const contentType = res.headers.get('content-type');
-      if (res.ok && contentType && contentType.includes('application/json')) {
-        const json = await res.json();
-        if (json?.data) {
-          setLocalItem(STORAGE_KEYS.EVENT, json.data);
-          return json.data;
-        }
-      }
-    } catch (e) {
-      // Fall through to local update
+    const res = await safeFetchJson<{ data: MatchEvent }>(`${BASE_URL}/events/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    if (res?.data) {
+      setLocalItem(STORAGE_KEYS.EVENT, res.data);
+      return res.data;
     }
 
     const current = getLocalItem<MatchEvent>(STORAGE_KEYS.EVENT, initialEvent);
@@ -182,39 +201,23 @@ export const api = {
 
   // 3. GET CATEGORIES
   async getCategories(): Promise<TicketCategory[]> {
-    try {
-      const res = await fetch(`${BASE_URL}/categories`);
-      const contentType = res.headers.get('content-type');
-      if (res.ok && contentType && contentType.includes('application/json')) {
-        const json = await res.json();
-        if (json?.data) {
-          setLocalItem(STORAGE_KEYS.CATEGORIES, json.data);
-          return json.data;
-        }
-      }
-    } catch (e) {
-      // Fall through to local store
+    const res = await safeFetchJson<{ data: TicketCategory[] }>(`${BASE_URL}/categories`);
+    if (res?.data && res.data.length > 0) {
+      setLocalItem(STORAGE_KEYS.CATEGORIES, res.data);
+      return res.data;
     }
     return getLocalItem<TicketCategory[]>(STORAGE_KEYS.CATEGORIES, initialCategories);
   },
 
   // 4. UPDATE CATEGORY
   async updateCategory(id: string, updates: Partial<TicketCategory>): Promise<TicketCategory> {
-    try {
-      const res = await fetch(`${BASE_URL}/categories/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
-      });
-      const contentType = res.headers.get('content-type');
-      if (res.ok && contentType && contentType.includes('application/json')) {
-        const json = await res.json();
-        if (json?.data) {
-          return json.data;
-        }
-      }
-    } catch (e) {
-      // Fall through
+    const res = await safeFetchJson<{ data: TicketCategory }>(`${BASE_URL}/categories/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    if (res?.data) {
+      return res.data;
     }
 
     const categories = getLocalItem<TicketCategory[]>(STORAGE_KEYS.CATEGORIES, initialCategories);
@@ -235,27 +238,20 @@ export const api = {
     customerIdNumber?: string;
     items: { categoryId: string; quantity: number }[];
   }): Promise<Booking> {
-    // Attempt backend call first
-    try {
-      const res = await fetch(`${BASE_URL}/bookings`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      const contentType = res.headers.get('content-type');
-      if (res.ok && contentType && contentType.includes('application/json')) {
-        const json = await res.json();
-        if (json?.data) {
-          const bookings = getLocalItem<Booking[]>(STORAGE_KEYS.BOOKINGS, sampleBookings);
-          setLocalItem(STORAGE_KEYS.BOOKINGS, [json.data, ...bookings]);
-          return json.data;
-        }
-      }
-    } catch (e) {
-      // Proceed to client-side creation
+    // Attempt backend call first if not static
+    const res = await safeFetchJson<{ data: Booking }>(`${BASE_URL}/bookings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    if (res?.data) {
+      const bookings = getLocalItem<Booking[]>(STORAGE_KEYS.BOOKINGS, sampleBookings);
+      setLocalItem(STORAGE_KEYS.BOOKINGS, [res.data, ...bookings]);
+      return res.data;
     }
 
-    // Client-side fallback creation (e.g. on Vercel static deployment)
+    // Client-side execution (e.g. on Vercel static deployment)
     const categories = getLocalItem<TicketCategory[]>(STORAGE_KEYS.CATEGORIES, initialCategories);
     let subtotalKes = 0;
     let totalTickets = 0;
@@ -303,18 +299,14 @@ export const api = {
 
   // 6. INITIATE M-PESA STK PUSH
   async initiateMpesaStkPush(bookingReference: string, phoneNumber: string, amountKes: number) {
-    try {
-      const res = await fetch(`${BASE_URL}/payments/stk-push`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bookingReference, phoneNumber, amountKes })
-      });
-      const contentType = res.headers.get('content-type');
-      if (res.ok && contentType && contentType.includes('application/json')) {
-        return await res.json();
-      }
-    } catch (e) {
-      // Proceed to client-side STK Push simulation
+    const res = await safeFetchJson<any>(`${BASE_URL}/payments/stk-push`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookingReference, phoneNumber, amountKes })
+    });
+
+    if (res?.success) {
+      return res;
     }
 
     return {
@@ -329,27 +321,20 @@ export const api = {
 
   // 7. VERIFY PAYMENT & ISSUE ELECTRONIC TICKETS WITH QR
   async verifyPayment(bookingReference: string, paymentMethod: string, mpesaPhone?: string, cardLastFour?: string): Promise<Booking> {
-    try {
-      const res = await fetch(`${BASE_URL}/payments/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bookingReference, paymentMethod, mpesaPhone, cardLastFour })
-      });
-      const contentType = res.headers.get('content-type');
-      if (res.ok && contentType && contentType.includes('application/json')) {
-        const json = await res.json();
-        if (json?.data) {
-          return json.data;
-        }
-      }
-    } catch (e) {
-      // Fall through to local verification
+    const res = await safeFetchJson<{ data: Booking }>(`${BASE_URL}/payments/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookingReference, paymentMethod, mpesaPhone, cardLastFour })
+    });
+
+    if (res?.data) {
+      return res.data;
     }
 
     // Client-side execution (e.g. Vercel)
     const bookings = getLocalItem<Booking[]>(STORAGE_KEYS.BOOKINGS, sampleBookings);
     const bookingIndex = bookings.findIndex(b => b.bookingReference === bookingReference);
-    
+
     if (bookingIndex === -1) {
       throw new Error(`Booking ${bookingReference} not found`);
     }
@@ -430,16 +415,8 @@ export const api = {
 
   // 8. GET BOOKING BY REFERENCE
   async getBooking(reference: string): Promise<Booking> {
-    try {
-      const res = await fetch(`${BASE_URL}/bookings/${reference}`);
-      const contentType = res.headers.get('content-type');
-      if (res.ok && contentType && contentType.includes('application/json')) {
-        const json = await res.json();
-        if (json?.data) return json.data;
-      }
-    } catch (e) {
-      // Fall through
-    }
+    const res = await safeFetchJson<{ data: Booking }>(`${BASE_URL}/bookings/${reference}`);
+    if (res?.data) return res.data;
 
     const bookings = getLocalItem<Booking[]>(STORAGE_KEYS.BOOKINGS, sampleBookings);
     const found = bookings.find(b => b.bookingReference === reference);
@@ -449,16 +426,8 @@ export const api = {
 
   // 9. GET CUSTOMER BOOKINGS
   async getCustomerBookings(email: string, phone: string): Promise<Booking[]> {
-    try {
-      const res = await fetch(`${BASE_URL}/customer/bookings?email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`);
-      const contentType = res.headers.get('content-type');
-      if (res.ok && contentType && contentType.includes('application/json')) {
-        const json = await res.json();
-        if (json?.data) return json.data;
-      }
-    } catch (e) {
-      // Fall through
-    }
+    const res = await safeFetchJson<{ data: Booking[] }>(`${BASE_URL}/customer/bookings?email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`);
+    if (res?.data) return res.data;
 
     const bookings = getLocalItem<Booking[]>(STORAGE_KEYS.BOOKINGS, sampleBookings);
     return bookings.filter(b => {
@@ -470,20 +439,12 @@ export const api = {
 
   // 10. GATE SCANNER - VERIFY TICKET & DETECT DUPLICATE ENTRY
   async verifyTicketGate(query: string, gate = 'Gate B Turnstile 1'): Promise<TicketVerificationResult> {
-    try {
-      const res = await fetch(`${BASE_URL}/tickets/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query, gate })
-      });
-      const contentType = res.headers.get('content-type');
-      if (res.ok && contentType && contentType.includes('application/json')) {
-        const json = await res.json();
-        if (json?.data) return json.data;
-      }
-    } catch (e) {
-      // Fall through
-    }
+    const res = await safeFetchJson<{ data: TicketVerificationResult }>(`${BASE_URL}/tickets/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, gate })
+    });
+    if (res?.data) return res.data;
 
     // Local Verification
     let ticketNum = String(query).trim();
@@ -534,16 +495,8 @@ export const api = {
 
   // 11. ADMIN STATS (With Complete Customer Privacy Protection)
   async getAdminStats() {
-    try {
-      const res = await fetch(`${BASE_URL}/admin/stats`);
-      const contentType = res.headers.get('content-type');
-      if (res.ok && contentType && contentType.includes('application/json')) {
-        const json = await res.json();
-        if (json?.data) return json.data;
-      }
-    } catch (e) {
-      // Fall through
-    }
+    const res = await safeFetchJson<{ data: any }>(`${BASE_URL}/admin/stats`);
+    if (res?.data) return res.data;
 
     const event = getLocalItem<MatchEvent>(STORAGE_KEYS.EVENT, initialEvent);
     const categories = getLocalItem<TicketCategory[]>(STORAGE_KEYS.CATEGORIES, initialCategories);
