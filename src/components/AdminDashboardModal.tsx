@@ -104,26 +104,25 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     }
   };
 
-  // Export Bookings CSV
+  // Export Bookings CSV (Anonymized / Operational Only)
   const handleExportCSV = () => {
-    const headers = ['Booking Ref', 'Customer Name', 'Phone', 'Email', 'Tickets', 'Total KES', 'Status', 'Payment Method', 'Receipt'];
+    const headers = ['Booking Ref', 'Ticket Category', 'Quantity', 'Total Amount (KES)', 'Booking Status', 'Payment Method', 'Gateway Receipt', 'Date'];
     const rows = bookings.map(b => [
       b.bookingReference,
-      `"${b.customerName}"`,
-      b.customerPhone,
-      b.customerEmail,
+      `"${b.items?.[0]?.categoryName || 'General'}"`,
       b.totalTickets,
       b.totalAmountKes,
       b.bookingStatus,
       b.paymentMethod || 'MPESA_STK_PUSH',
-      b.mpesaReceiptNumber || 'N/A'
+      b.mpesaReceiptNumber || 'N/A',
+      `"${new Date(b.createdAt).toLocaleDateString()}"`
     ]);
 
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `kickpass_bookings_${Date.now()}.csv`);
+    link.setAttribute('download', `kickpass_operations_ledger_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -442,16 +441,19 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
         {/* TAB 4: BOOKINGS LEDGER & CSV EXPORT */}
         {activeTab === 'bookings' && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="text-xs text-slate-400">
-                Total Bookings Recorded: <strong className="text-white">{bookings.length}</strong>
+            <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-3.5 flex items-center justify-between gap-3 text-xs text-slate-300">
+              <div className="flex items-center gap-2">
+                <span className="flex h-2 w-2 rounded-full bg-emerald-400" />
+                <span>
+                  <strong className="text-white">Privacy Protected:</strong> In compliance with ticketing privacy regulations, individual customer names, phone numbers, and identity credentials are encrypted and excluded from the administrative operations ledger.
+                </span>
               </div>
               <button
                 onClick={handleExportCSV}
-                className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-4 py-2 text-xs font-semibold text-slate-200 hover:text-white"
+                className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-3.5 py-1.5 text-xs font-semibold text-slate-200 hover:text-white shrink-0 cursor-pointer"
               >
                 <Download className="h-3.5 w-3.5" />
-                <span>Export Bookings CSV</span>
+                <span>Export Ledger CSV</span>
               </button>
             </div>
 
@@ -460,22 +462,25 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                 <thead className="border-b border-slate-800 text-slate-400 bg-slate-950/60">
                   <tr>
                     <th className="p-3">Reference</th>
-                    <th className="p-3">Customer</th>
-                    <th className="p-3">Phone</th>
-                    <th className="p-3">Tickets</th>
+                    <th className="p-3">Category Tier</th>
+                    <th className="p-3">Pass Count</th>
                     <th className="p-3">Amount (KES)</th>
-                    <th className="p-3">Status</th>
-                    <th className="p-3">M-PESA Receipt</th>
+                    <th className="p-3">Payment Method</th>
+                    <th className="p-3">Payment Status</th>
+                    <th className="p-3">Gateway Receipt</th>
+                    <th className="p-3">Date</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60 font-mono">
                   {bookings.map((b) => (
                     <tr key={b.id} className="hover:bg-slate-900/60">
                       <td className="p-3 font-bold text-white">{b.bookingReference}</td>
-                      <td className="p-3 font-sans text-slate-200">{b.customerName}</td>
-                      <td className="p-3 text-slate-400">{b.customerPhone}</td>
-                      <td className="p-3 text-slate-300">{b.totalTickets}</td>
+                      <td className="p-3 font-sans text-slate-200">{b.items?.[0]?.categoryName || 'General Admission'}</td>
+                      <td className="p-3 text-slate-300">{b.totalTickets} pass(es)</td>
                       <td className="p-3 text-emerald-400 font-bold">{b.totalAmountKes.toLocaleString()}</td>
+                      <td className="p-3 font-sans text-slate-300">
+                        {b.paymentMethod === 'CARD_PAYMENT' ? 'Debit/Credit Card' : 'M-PESA STK Push'}
+                      </td>
                       <td className="p-3">
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
                           b.paymentStatus === 'PAID' ? 'bg-emerald-950 text-emerald-400' : 'bg-amber-950 text-amber-400'
@@ -484,6 +489,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                         </span>
                       </td>
                       <td className="p-3 text-slate-400">{b.mpesaReceiptNumber || '—'}</td>
+                      <td className="p-3 text-slate-400">{new Date(b.createdAt).toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>

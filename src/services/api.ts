@@ -156,7 +156,12 @@ export const api = {
         totalBookings: 8412,
         confirmedBookings: 8120,
         categories: initialCategories,
-        recentBookings: sampleBookings,
+        recentBookings: sampleBookings.map(b => ({
+          ...b,
+          customerName: 'Protected Spectator',
+          customerPhone: '***-***-****',
+          customerEmail: 'protected@anonymized.local'
+        })),
         recentLogs: []
       };
     }

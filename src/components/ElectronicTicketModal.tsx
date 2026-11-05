@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
-import { X, Download, Printer, ShieldCheck, MapPin, Calendar, Clock, Ticket as TicketIcon, CheckCircle2 } from 'lucide-react';
+import { X, Download, Printer, ShieldCheck, MapPin, Calendar, CheckCircle2, Loader2, FileText, Image as ImageIcon } from 'lucide-react';
 import { Ticket } from '../types';
 
 interface ElectronicTicketModalProps {
@@ -11,6 +11,8 @@ interface ElectronicTicketModalProps {
 
 export const ElectronicTicketModal: React.FC<ElectronicTicketModalProps> = ({ isOpen, onClose, ticket }) => {
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -18,7 +20,7 @@ export const ElectronicTicketModal: React.FC<ElectronicTicketModalProps> = ({ is
       QRCode.toDataURL(
         ticket.qrCodeSignature || ticket.ticketNumber,
         {
-          width: 250,
+          width: 300,
           margin: 1,
           color: {
             dark: '#000000',
@@ -36,16 +38,273 @@ export const ElectronicTicketModal: React.FC<ElectronicTicketModalProps> = ({ is
 
   if (!isOpen || !ticket) return null;
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   const formattedDate = new Date(ticket.eventDate).toLocaleDateString('en-KE', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric'
   });
+
+  // Direct High-Resolution Graphic Ticket Download (.PNG)
+  const handleDownloadImage = () => {
+    if (!ticket) return;
+    setIsDownloading(true);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 1200;
+    canvas.height = 680;
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+      setIsDownloading(false);
+      return;
+    }
+
+    // Background Dark Slate / Navy Gradient
+    const bgGrad = ctx.createLinearGradient(0, 0, 1200, 680);
+    bgGrad.addColorStop(0, '#070b16');
+    bgGrad.addColorStop(0.5, '#0b132b');
+    bgGrad.addColorStop(1, '#111827');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, 1200, 680);
+
+    // Red & Gold Outer Border
+    ctx.strokeStyle = '#dc2626';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(16, 16, 1168, 648);
+
+    ctx.strokeStyle = '#eab308';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(26, 26, 1148, 628);
+
+    // Perforated Stub Divider Line at X = 830
+    ctx.setLineDash([8, 8]);
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(830, 30);
+    ctx.lineTo(830, 650);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Header Zone
+    ctx.fillStyle = '#dc2626';
+    ctx.beginPath();
+    ctx.roundRect(50, 48, 44, 44, 8);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText('KP', 58, 80);
+
+    ctx.font = '800 22px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText('KICKPASS KENYA', 108, 72);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '600 13px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText('OFFICIAL DIGITAL MATCH PASS · TALANTA SPORTS CITY STADIUM', 108, 92);
+
+    // Match Showdown Title
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 34px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText('AFC AJAX vs FC BAYERN MUNICH', 50, 150);
+
+    // Event Date & Venue
+    ctx.fillStyle = '#ef4444';
+    ctx.font = '700 16px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(`PROPOSED DATE: ${formattedDate.toUpperCase()} · KICKOFF 17:00 EAT`, 50, 185);
+
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = '600 15px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(`VENUE: ${ticket.venueName}, Nairobi, Kenya (Gates open 13:00 EAT)`, 50, 212);
+
+    // Category Box
+    ctx.fillStyle = '#1e293b';
+    ctx.beginPath();
+    ctx.roundRect(50, 245, 740, 95, 12);
+    ctx.fill();
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.fillStyle = '#eab308';
+    ctx.font = '800 24px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(ticket.categoryName.toUpperCase(), 75, 285);
+
+    ctx.fillStyle = '#10b981';
+    ctx.font = '700 16px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(`ENTRANCE: ${ticket.gateEntrance.toUpperCase()}`, 75, 318);
+
+    // Attendee & Seat Info
+    ctx.fillStyle = '#64748b';
+    ctx.font = '600 13px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText('TICKET HOLDER:', 50, 380);
+    ctx.fillText('SEAT ALLOCATION:', 430, 380);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '800 22px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(ticket.attendeeName, 50, 412);
+    ctx.fillText(ticket.seatIdentifier, 430, 412);
+
+    // Serial & Security
+    ctx.fillStyle = '#64748b';
+    ctx.font = '600 13px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText('SERIAL NUMBER:', 50, 465);
+    ctx.fillText('SECURITY STATUS:', 430, 465);
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = '700 18px monospace';
+    ctx.fillText(ticket.ticketNumber, 50, 495);
+
+    ctx.fillStyle = '#34d399';
+    ctx.font = '700 16px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText('ISSUED & VERIFIED · 100% AUTHENTIC', 430, 495);
+
+    // Terms / Watermark at bottom
+    ctx.fillStyle = '#475569';
+    ctx.font = '500 11px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText('1. National ID / Passport required at security turnstiles.', 50, 560);
+    ctx.fillText('2. QR code is single-entry. Duplicate scans trigger instant turnstile alarm & denial.', 50, 580);
+    ctx.fillText(`3. Cryptographic Signature: ${ticket.securityHash.slice(0, 42)}...`, 50, 600);
+
+    // Right Stub: QR Code & Turnstile Scanner Area
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '800 15px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText('TURNSTILE SCANNER', 860, 80);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '600 11px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText('HOLD STEADY TO READER', 860, 102);
+
+    // Draw QR code image
+    const qrImg = new Image();
+    qrImg.onload = () => {
+      // White container for QR
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.roundRect(860, 130, 280, 280, 16);
+      ctx.fill();
+
+      ctx.drawImage(qrImg, 875, 145, 250, 250);
+
+      // Ticket ID on stub
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 18px monospace';
+      ctx.fillText(ticket.ticketNumber, 870, 450);
+
+      ctx.fillStyle = '#ef4444';
+      ctx.font = '700 13px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText(ticket.categoryName, 870, 480);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '500 11px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('Talanta Stadium Nairobi', 870, 505);
+
+      // Convert canvas to download link
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `KickPass_Ticket_${ticket.ticketNumber}.png`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+
+          setIsDownloading(false);
+          setDownloadSuccess(true);
+          setTimeout(() => setDownloadSuccess(false), 3000);
+        }
+      }, 'image/png');
+    };
+
+    qrImg.src = qrDataUrl || '';
+  };
+
+  // Direct Printable PDF / HTML Document Download
+  const handleDownloadDocument = () => {
+    if (!ticket) return;
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>KickPass Kenya - Ticket ${ticket.ticketNumber}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0b132b; color: #fff; margin: 0; padding: 40px; }
+    .ticket-card { max-width: 800px; margin: 0 auto; background: #070b16; border: 2px solid #dc2626; border-radius: 16px; padding: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 20px; margin-bottom: 24px; }
+    .brand { font-size: 22px; font-weight: 900; color: #fff; }
+    .badge { color: #10b981; font-weight: bold; font-size: 13px; }
+    .match-title { font-size: 28px; font-weight: 900; margin: 12px 0 6px; }
+    .meta { font-size: 14px; color: #94a3b8; line-height: 1.6; }
+    .category-box { background: #1e293b; border-radius: 12px; padding: 20px; margin: 24px 0; border: 1px solid #334155; }
+    .cat-name { font-size: 20px; font-weight: 800; color: #eab308; }
+    .gate { font-size: 14px; color: #10b981; font-weight: bold; margin-top: 4px; }
+    .grid { display: flex; justify-content: space-between; margin-bottom: 24px; }
+    .qr-container { text-align: center; background: #fff; padding: 16px; border-radius: 12px; display: inline-block; }
+    .qr-container img { width: 200px; height: 200px; }
+    .qr-subtext { color: #000; font-weight: bold; font-family: monospace; font-size: 14px; margin-top: 8px; }
+    .footer { border-top: 1px solid #1e293b; padding-top: 16px; font-size: 11px; color: #64748b; line-height: 1.5; }
+    @media print { body { background: #fff; color: #000; padding: 0; } .ticket-card { border-color: #000; box-shadow: none; color: #000; } }
+  </style>
+</head>
+<body>
+  <div class="ticket-card">
+    <div class="header">
+      <div class="brand">KICKPASS KENYA</div>
+      <div class="badge">OFFICIAL ELECTRONIC TICKET · ${ticket.status}</div>
+    </div>
+    <div class="match-title">${ticket.eventTitle}</div>
+    <div class="meta">
+      <strong>Date:</strong> ${formattedDate} · Kickoff 17:00 EAT<br>
+      <strong>Venue:</strong> ${ticket.venueName}, Nairobi, Kenya (Gates Open 13:00 EAT)
+    </div>
+    <div class="category-box">
+      <div class="cat-name">${ticket.categoryName}</div>
+      <div class="gate">Gate Entrance: ${ticket.gateEntrance}</div>
+      <div style="font-size: 13px; color: #cbd5e1; margin-top: 4px;">Seat: ${ticket.seatIdentifier}</div>
+    </div>
+    <div class="grid">
+      <div>
+        <p><strong>Ticket Holder:</strong><br>${ticket.attendeeName}</p>
+        <p><strong>Serial Number:</strong><br><span style="font-family: monospace; color: #38bdf8;">${ticket.ticketNumber}</span></p>
+        <p><strong>Security Hash:</strong><br><span style="font-family: monospace; font-size: 10px; color: #94a3b8;">${ticket.securityHash}</span></p>
+      </div>
+      <div class="qr-container">
+        <img src="${qrDataUrl}" alt="Ticket QR">
+        <div class="qr-subtext">${ticket.ticketNumber}</div>
+      </div>
+    </div>
+    <div class="footer">
+      1. Every attendee must present this authentic electronic ticket (digital on smartphone or printed).<br>
+      2. Original National ID or Passport required at Talanta Stadium turnstiles.<br>
+      3. QR Code is verified upon first scan. Duplicate entries will be automatically denied.
+    </div>
+  </div>
+  <script>
+    window.onload = function() { window.print(); }
+  </script>
+</body>
+</html>
+    `;
+
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `KickPass_Ticket_${ticket.ticketNumber}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-md overflow-y-auto">
@@ -166,22 +425,51 @@ export const ElectronicTicketModal: React.FC<ElectronicTicketModalProps> = ({ is
           </div>
         </div>
 
-        {/* Action Controls */}
-        <div className="p-4 sm:p-6 bg-slate-900/90 rounded-b-2xl border-t border-slate-800 flex justify-end gap-3">
-          <button
-            onClick={handlePrint}
-            className="flex items-center gap-2 rounded-xl bg-slate-800 px-4 py-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 hover:text-white transition-colors cursor-pointer"
-          >
-            <Printer className="h-4 w-4" />
-            <span>Print A4 Ticket</span>
-          </button>
-          <button
-            onClick={handlePrint}
-            className="flex items-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-red-500 transition-colors cursor-pointer shadow-md"
-          >
-            <Download className="h-4 w-4" />
-            <span>Download Ticket PDF</span>
-          </button>
+        {/* Action Controls: Direct Download & Print */}
+        <div className="p-4 sm:p-6 bg-slate-900/90 rounded-b-2xl border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
+          <div className="text-xs text-slate-400">
+            {downloadSuccess && (
+              <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                <CheckCircle2 className="h-4 w-4" /> Ticket file downloaded successfully!
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              onClick={handlePrint}
+              className="flex items-center gap-1.5 rounded-xl bg-slate-800 px-3.5 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-700 hover:text-white transition-colors cursor-pointer"
+            >
+              <Printer className="h-4 w-4" />
+              <span>Print A4</span>
+            </button>
+
+            <button
+              onClick={handleDownloadDocument}
+              className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-3.5 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-700 hover:text-white transition-colors cursor-pointer"
+            >
+              <FileText className="h-4 w-4" />
+              <span>Download PDF/HTML</span>
+            </button>
+
+            <button
+              onClick={handleDownloadImage}
+              disabled={isDownloading}
+              className="flex items-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-red-500 transition-colors cursor-pointer shadow-md disabled:opacity-50"
+            >
+              {isDownloading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Generating Image...</span>
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4" />
+                  <span>Download Ticket (PNG)</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
       </div>

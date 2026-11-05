@@ -480,7 +480,13 @@ app.get('/api/admin/stats', (_req: Request, res: Response) => {
       totalBookings: bookingsData.length,
       confirmedBookings: bookingsData.filter(b => b.paymentStatus === 'PAID').length,
       categories: categoriesData,
-      recentBookings: bookingsData.slice(0, 10),
+      recentBookings: bookingsData.slice(0, 50).map(b => ({
+        ...b,
+        customerName: 'Protected Spectator',
+        customerEmail: 'protected@anonymized.local',
+        customerPhone: '***-***-****',
+        customerIdNumber: '********'
+      })),
       recentLogs: verificationLogs.slice(0, 10)
     }
   });
