@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { X, Download, Printer, ShieldCheck, MapPin, Calendar, CheckCircle2, Loader2, FileText, Image as ImageIcon } from 'lucide-react';
 import { Ticket } from '../types';
+import { TeamCrest } from './TeamCrest';
 
 interface ElectronicTicketModalProps {
   isOpen: boolean;
@@ -121,84 +122,127 @@ export const ElectronicTicketModal: React.FC<ElectronicTicketModalProps> = ({ is
     // Category Box
     ctx.fillStyle = '#1e293b';
     ctx.beginPath();
-    ctx.roundRect(50, 245, 740, 95, 12);
+    ctx.roundRect(50, 235, 740, 60, 10);
     ctx.fill();
-    ctx.strokeStyle = '#475569';
+    ctx.strokeStyle = '#334155';
     ctx.lineWidth = 1;
     ctx.stroke();
 
     ctx.fillStyle = '#eab308';
-    ctx.font = '800 24px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText(ticket.categoryName.toUpperCase(), 75, 285);
+    ctx.font = '800 20px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(ticket.categoryName.toUpperCase(), 70, 272);
 
-    ctx.fillStyle = '#10b981';
-    ctx.font = '700 16px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText(`ENTRANCE: ${ticket.gateEntrance.toUpperCase()}`, 75, 318);
+    // Dedicated Full-Width Seat Allocation Banner (NEVER overlaps with QR code)
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    ctx.roundRect(50, 310, 740, 75, 12);
+    ctx.fill();
+    ctx.strokeStyle = '#dc2626';
+    ctx.lineWidth = 2;
+    ctx.stroke();
 
-    // Attendee & Seat Info
-    ctx.fillStyle = '#64748b';
-    ctx.font = '600 13px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText('TICKET HOLDER:', 50, 380);
-    ctx.fillText('SEAT ALLOCATION:', 430, 380);
+    // Red left accent indicator
+    ctx.fillStyle = '#dc2626';
+    ctx.beginPath();
+    ctx.roundRect(52, 312, 8, 71, 4);
+    ctx.fill();
+
+    ctx.fillStyle = '#f87171';
+    ctx.font = '700 12px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText('RESERVED SEAT ALLOCATION & SECTION:', 75, 335);
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = '800 22px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText(ticket.attendeeName, 50, 412);
-    ctx.fillText(ticket.seatIdentifier, 430, 412);
+    // Dynamically scale font if seat string is long to prevent crossing divider line
+    const seatFontSize = ticket.seatIdentifier.length > 35 ? 17 : 21;
+    ctx.font = `800 ${seatFontSize}px monospace`;
+    ctx.fillText(ticket.seatIdentifier, 75, 365);
 
-    // Serial & Security
+    // Attendee & Gate Entrance Info
     ctx.fillStyle = '#64748b';
-    ctx.font = '600 13px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText('SERIAL NUMBER:', 50, 465);
-    ctx.fillText('SECURITY STATUS:', 430, 465);
+    ctx.font = '600 12px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText('TICKET HOLDER:', 50, 415);
+    ctx.fillText('DESIGNATED ENTRANCE GATE:', 430, 415);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '800 19px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(ticket.attendeeName, 50, 442);
+
+    ctx.fillStyle = '#10b981';
+    ctx.font = '800 18px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(ticket.gateEntrance, 430, 442);
+
+    // Serial & Security Status
+    ctx.fillStyle = '#64748b';
+    ctx.font = '600 12px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText('SERIAL NUMBER:', 50, 485);
+    ctx.fillText('SECURITY STATUS:', 430, 485);
 
     ctx.fillStyle = '#38bdf8';
-    ctx.font = '700 18px monospace';
-    ctx.fillText(ticket.ticketNumber, 50, 495);
+    ctx.font = '700 17px monospace';
+    ctx.fillText(ticket.ticketNumber, 50, 510);
 
     ctx.fillStyle = '#34d399';
-    ctx.font = '700 16px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText('ISSUED & VERIFIED · 100% AUTHENTIC', 430, 495);
+    ctx.font = '700 15px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText('ISSUED & VERIFIED · 100% AUTHENTIC', 430, 510);
 
     // Terms / Watermark at bottom
     ctx.fillStyle = '#475569';
     ctx.font = '500 11px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText('1. National ID / Passport required at security turnstiles.', 50, 560);
-    ctx.fillText('2. QR code is single-entry. Duplicate scans trigger instant turnstile alarm & denial.', 50, 580);
+    ctx.fillText('1. National ID / Passport required at turnstile security.', 50, 560);
+    ctx.fillText('2. QR code is single-entry. Duplicate scans trigger instant turnstile denial.', 50, 580);
     ctx.fillText(`3. Cryptographic Signature: ${ticket.securityHash.slice(0, 42)}...`, 50, 600);
 
-    // Right Stub: QR Code & Turnstile Scanner Area
+    // Right Stub: Isolated QR Code & Turnstile Scanner Area
     ctx.fillStyle = '#ffffff';
     ctx.font = '800 15px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText('TURNSTILE SCANNER', 860, 80);
+    ctx.fillText('TURNSTILE SCANNER', 870, 75);
 
     ctx.fillStyle = '#94a3b8';
     ctx.font = '600 11px "Plus Jakarta Sans", sans-serif';
-    ctx.fillText('HOLD STEADY TO READER', 860, 102);
+    ctx.fillText('HOLD PASS TO OPTICAL READER', 870, 95);
 
-    // Draw QR code image
+    // Draw QR code image on right stub
     const qrImg = new Image();
     qrImg.onload = () => {
-      // White container for QR
+      // White container for QR on stub
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
-      ctx.roundRect(860, 130, 280, 280, 16);
+      ctx.roundRect(870, 115, 260, 260, 16);
       ctx.fill();
 
-      ctx.drawImage(qrImg, 875, 145, 250, 250);
+      // Centered QR image inside container
+      ctx.drawImage(qrImg, 885, 130, 230, 230);
+
+      // Dedicated Seat summary box on right stub underneath QR
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.roundRect(870, 395, 260, 85, 10);
+      ctx.fill();
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '700 11px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('STUB SEAT ALLOCATION:', 885, 418);
+
+      ctx.fillStyle = '#ffffff';
+      const stubSeatText = ticket.seatIdentifier.length > 25 ? ticket.seatIdentifier.slice(0, 25) + '...' : ticket.seatIdentifier;
+      ctx.font = '800 13px monospace';
+      ctx.fillText(stubSeatText, 885, 440);
+
+      ctx.fillStyle = '#10b981';
+      ctx.font = '700 12px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText(ticket.gateEntrance, 885, 463);
 
       // Ticket ID on stub
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '800 18px monospace';
-      ctx.fillText(ticket.ticketNumber, 870, 450);
-
       ctx.fillStyle = '#ef4444';
-      ctx.font = '700 13px "Plus Jakarta Sans", sans-serif';
-      ctx.fillText(ticket.categoryName, 870, 480);
+      ctx.font = '800 15px monospace';
+      ctx.fillText(ticket.ticketNumber, 870, 510);
 
       ctx.fillStyle = '#94a3b8';
       ctx.font = '500 11px "Plus Jakarta Sans", sans-serif';
-      ctx.fillText('Talanta Stadium Nairobi', 870, 505);
+      ctx.fillText('Raila Odinga Stadium Nairobi', 870, 535);
 
       // Convert canvas to download link
       canvas.toBlob((blob) => {
@@ -240,12 +284,16 @@ export const ElectronicTicketModal: React.FC<ElectronicTicketModalProps> = ({ is
     .badge { color: #10b981; font-weight: bold; font-size: 13px; }
     .match-title { font-size: 28px; font-weight: 900; margin: 12px 0 6px; }
     .meta { font-size: 14px; color: #94a3b8; line-height: 1.6; }
-    .category-box { background: #1e293b; border-radius: 12px; padding: 20px; margin: 24px 0; border: 1px solid #334155; }
-    .cat-name { font-size: 20px; font-weight: 800; color: #eab308; }
+    .seat-banner { background: #0f172a; border: 2px solid #dc2626; border-radius: 12px; padding: 16px 20px; margin: 20px 0; }
+    .seat-label { font-size: 11px; font-weight: bold; text-transform: uppercase; color: #f87171; letter-spacing: 1px; }
+    .seat-val { font-size: 20px; font-weight: 900; color: #fff; font-family: monospace; margin-top: 4px; }
+    .category-box { background: #1e293b; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; border: 1px solid #334155; }
+    .cat-name { font-size: 18px; font-weight: 800; color: #eab308; }
     .gate { font-size: 14px; color: #10b981; font-weight: bold; margin-top: 4px; }
-    .grid { display: flex; justify-content: space-between; margin-bottom: 24px; }
-    .qr-container { text-align: center; background: #fff; padding: 16px; border-radius: 12px; display: inline-block; }
-    .qr-container img { width: 200px; height: 200px; }
+    .grid { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 24px; }
+    .details-col { flex: 1; }
+    .qr-container { text-align: center; background: #fff; padding: 16px; border-radius: 12px; display: inline-block; shrink: 0; }
+    .qr-container img { width: 190px; height: 190px; }
     .qr-subtext { color: #000; font-weight: bold; font-family: monospace; font-size: 14px; margin-top: 8px; }
     .footer { border-top: 1px solid #1e293b; padding-top: 16px; font-size: 11px; color: #64748b; line-height: 1.5; }
     @media print { body { background: #fff; color: #000; padding: 0; } .ticket-card { border-color: #000; box-shadow: none; color: #000; } }
@@ -259,16 +307,23 @@ export const ElectronicTicketModal: React.FC<ElectronicTicketModalProps> = ({ is
     </div>
     <div class="match-title">${ticket.eventTitle}</div>
     <div class="meta">
-      <strong>Date:</strong> ${formattedDate} · Kickoff 17:00 EAT<br>
-      <strong>Venue:</strong> ${ticket.venueName}, Nairobi, Kenya (Gates Open 13:00 EAT)
+      <strong>Date:</strong> ${formattedDate} · Kickoff: 8:15 PM EAT<br>
+      <strong>Venue:</strong> ${ticket.venueName}, Nairobi (Gates Open: 11:00 AM)
     </div>
+
+    <!-- Dedicated Full-Width Seat Banner -->
+    <div class="seat-banner">
+      <div class="seat-label">Reserved Seat Allocation</div>
+      <div class="seat-val">${ticket.seatIdentifier}</div>
+    </div>
+
     <div class="category-box">
       <div class="cat-name">${ticket.categoryName}</div>
-      <div class="gate">Gate Entrance: ${ticket.gateEntrance}</div>
-      <div style="font-size: 13px; color: #cbd5e1; margin-top: 4px;">Seat: ${ticket.seatIdentifier}</div>
+      <div class="gate">Designated Entrance: ${ticket.gateEntrance}</div>
     </div>
+
     <div class="grid">
-      <div>
+      <div class="details-col">
         <p><strong>Ticket Holder:</strong><br>${ticket.attendeeName}</p>
         <p><strong>Serial Number:</strong><br><span style="font-family: monospace; color: #38bdf8;">${ticket.ticketNumber}</span></p>
         <p><strong>Security Hash:</strong><br><span style="font-family: monospace; font-size: 10px; color: #94a3b8;">${ticket.securityHash}</span></p>
@@ -280,7 +335,7 @@ export const ElectronicTicketModal: React.FC<ElectronicTicketModalProps> = ({ is
     </div>
     <div class="footer">
       1. Every attendee must present this authentic electronic ticket (digital on smartphone or printed).<br>
-      2. Original National ID or Passport required at Talanta Stadium turnstiles.<br>
+      2. Original National ID or Passport required at Raila Odinga International Stadium turnstiles.<br>
       3. QR Code is verified upon first scan. Duplicate entries will be automatically denied.
     </div>
   </div>
@@ -313,7 +368,7 @@ export const ElectronicTicketModal: React.FC<ElectronicTicketModalProps> = ({ is
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-black/40 text-slate-400 hover:text-white"
+          className="absolute top-4 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-black/40 text-slate-400 hover:text-white cursor-pointer"
         >
           <X className="h-5 w-5" />
         </button>
@@ -336,18 +391,22 @@ export const ElectronicTicketModal: React.FC<ElectronicTicketModalProps> = ({ is
           </div>
 
           {/* Ticket Body: Match Graphic / Details */}
-          <div className="rounded-xl bg-gradient-to-br from-slate-900 via-slate-900 to-red-950/30 p-5 border border-slate-800 mb-5 relative overflow-hidden">
+          <div className="rounded-xl bg-gradient-to-br from-slate-900 via-slate-900 to-red-950/30 p-5 border border-slate-800 mb-4 relative overflow-hidden">
             <div className="flex items-center justify-between gap-4 mb-3">
-              <div className="flex items-center gap-2">
-                <img src="/src/assets/teams/ajax.svg" alt="Ajax" className="h-10 w-10 object-contain drop-shadow" />
-                <span className="text-xs font-bold text-white">AJAX</span>
+              <div className="flex items-center gap-2.5">
+                <div className="h-10 w-10 p-0.5 rounded-lg bg-white/5 border border-white/10">
+                  <TeamCrest teamIdOrName="Bayern" className="h-full w-full object-contain" />
+                </div>
+                <span className="text-xs font-bold text-white tracking-wide">BAYERN</span>
               </div>
-              <div className="text-sm font-black italic text-red-500 px-2 py-0.5 rounded bg-slate-950 border border-slate-800">
+              <div className="text-xs font-black italic text-red-500 px-2.5 py-1 rounded bg-slate-950 border border-slate-800 shadow">
                 VS
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-white">BAYERN</span>
-                <img src="/src/assets/teams/bayern.svg" alt="Bayern" className="h-10 w-10 object-contain drop-shadow" />
+              <div className="flex items-center gap-2.5">
+                <span className="text-xs font-bold text-white tracking-wide">AJAX</span>
+                <div className="h-10 w-10 p-0.5 rounded-lg bg-white/5 border border-white/10">
+                  <TeamCrest teamIdOrName="Ajax" className="h-full w-full object-contain" />
+                </div>
               </div>
             </div>
 
@@ -357,64 +416,81 @@ export const ElectronicTicketModal: React.FC<ElectronicTicketModalProps> = ({ is
 
             <div className="space-y-1 text-xs text-slate-300">
               <div className="flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5 text-red-400" />
-                <span>{formattedDate}</span>
+                <Calendar className="h-3.5 w-3.5 text-red-400 shrink-0" />
+                <span>{formattedDate} · Kickoff: 8:15 PM EAT</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5 text-red-400" />
-                <span>{ticket.venueName}, Nairobi, Kenya</span>
+                <MapPin className="h-3.5 w-3.5 text-red-400 shrink-0" />
+                <span>{ticket.venueName}, Nairobi (Gates Open: 11:00 AM)</span>
               </div>
             </div>
           </div>
 
-          {/* Seating & Gate Allocation Card */}
-          <div className="grid grid-cols-2 gap-3 text-xs bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 mb-5">
-            <div>
-              <span className="text-slate-500 block">Ticket Category</span>
-              <span className="font-bold text-white text-sm">{ticket.categoryName}</span>
-            </div>
-            <div>
-              <span className="text-slate-500 block">Designated Entrance</span>
-              <span className="font-bold text-emerald-400 text-sm">{ticket.gateEntrance}</span>
-            </div>
-            <div>
-              <span className="text-slate-500 block">Seat Identifier</span>
-              <span className="font-semibold text-white">{ticket.seatIdentifier}</span>
-            </div>
-            <div>
-              <span className="text-slate-500 block">Attendee Name</span>
-              <span className="font-semibold text-white">{ticket.attendeeName}</span>
+          {/* DEDICATED PROMINENT SEAT ALLOCATION CARD (Balanced & Distinct from QR Code) */}
+          <div className="rounded-xl border border-red-500/40 bg-gradient-to-r from-red-950/50 via-slate-900 to-slate-900 p-4 mb-4 shadow-lg shadow-red-950/20">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-wider text-red-400 flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                  <span>Reserved Seat Allocation & Stand</span>
+                </div>
+                <div className="text-lg sm:text-xl font-black text-white font-mono mt-0.5 tracking-wide">
+                  {ticket.seatIdentifier}
+                </div>
+              </div>
+              <div className="shrink-0 bg-slate-950/80 px-3.5 py-2 rounded-lg border border-slate-800">
+                <div className="text-[10px] text-slate-400 font-semibold uppercase">Turnstile Entrance</div>
+                <div className="text-xs font-bold text-emerald-400">{ticket.gateEntrance}</div>
+              </div>
             </div>
           </div>
 
-          {/* Genuine Scannable QR Code & Cryptographic Hash */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-5 bg-white p-5 rounded-xl text-slate-950 mb-5">
-            <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                Gate Steward Optical QR Code
-              </div>
-              <div className="font-mono font-black text-lg text-slate-900 tracking-wider my-0.5">
-                {ticket.ticketNumber}
-              </div>
-              <div className="text-[11px] text-slate-600 max-w-[200px] leading-tight">
-                Scan this high-density QR at turnstile reader or gate steward handheld scanner.
-              </div>
-              <div className="mt-2 text-[9px] font-mono text-slate-400 break-all">
-                Hash: {ticket.securityHash.slice(0, 24)}...
-              </div>
+          {/* Attendee Details & Category Breakdown */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs bg-slate-900/60 p-3.5 rounded-xl border border-slate-800 mb-4">
+            <div>
+              <span className="text-slate-500 block text-[11px]">Category</span>
+              <span className="font-bold text-white">{ticket.categoryName}</span>
             </div>
+            <div>
+              <span className="text-slate-500 block text-[11px]">Ticket Holder</span>
+              <span className="font-semibold text-white truncate block">{ticket.attendeeName}</span>
+            </div>
+            <div className="col-span-2 sm:col-span-1">
+              <span className="text-slate-500 block text-[11px]">ID / Passport</span>
+              <span className="font-mono text-slate-300">{ticket.attendeeIdNumber || 'Verified at Gate'}</span>
+            </div>
+          </div>
 
-            {qrDataUrl ? (
-              <div className="shrink-0 p-1.5 bg-white rounded-lg border border-slate-300 shadow-sm">
-                <img
-                  src={qrDataUrl}
-                  alt={`QR Code for Ticket ${ticket.ticketNumber}`}
-                  className="h-32 w-32 object-contain"
-                />
+          {/* BALANCED SEPARATE OPTICAL QR CODE SECTION (Never blocks seat details) */}
+          <div className="rounded-xl bg-white p-4 text-slate-950 mb-4 shadow-md">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  Turnstile Optical Entry Code
+                </div>
+                <div className="font-mono font-black text-base text-slate-900 tracking-wider my-0.5">
+                  {ticket.ticketNumber}
+                </div>
+                <p className="text-[11px] text-slate-600 max-w-[220px] leading-tight">
+                  Hold this high-density barcode to the turnstile optical scanner at {ticket.gateEntrance}.
+                </p>
+                <div className="mt-2 text-[9px] font-mono text-slate-400 break-all">
+                  Hash: {ticket.securityHash.slice(0, 24)}...
+                </div>
               </div>
-            ) : (
-              <div className="h-32 w-32 bg-slate-200 animate-pulse rounded-lg" />
-            )}
+
+              {qrDataUrl ? (
+                <div className="shrink-0 p-1.5 bg-white rounded-lg border border-slate-300 shadow-sm">
+                  <img
+                    src={qrDataUrl}
+                    alt={`QR Code for Ticket ${ticket.ticketNumber}`}
+                    className="h-32 w-32 object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="h-32 w-32 bg-slate-200 animate-pulse rounded-lg" />
+              )}
+            </div>
           </div>
 
           {/* Entry Rules & Disclaimers */}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, MapPin, Clock, ArrowRight, ShieldCheck, Ticket as TicketIcon } from 'lucide-react';
 import { MatchEvent } from '../types';
+import { TeamCrest } from './TeamCrest';
 
 interface HeroSectionProps {
   event: MatchEvent;
@@ -49,15 +50,22 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ event, onBookTickets, 
   return (
     <section className="relative overflow-hidden border-b border-slate-800 bg-slate-950">
       {/* Background Stadium Photography with contrast scrim */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950">
         <img
-          src="/src/assets/images/hero_football_stadium_1793884336463.jpg"
-          alt="Talanta Sports City Stadium Nairobi Matchday Background"
+          src="/images/hero_football_stadium_1793884336463.jpg"
+          alt="Raila Odinga International Stadium Nairobi Matchday Atmosphere"
           className="h-full w-full object-cover object-center filter brightness-40"
           referrerPolicy="no-referrer"
+          onError={(e) => {
+            // Safe fallback to public root path
+            const target = e.currentTarget;
+            if (!target.src.includes('/images/')) {
+              target.src = '/images/hero_football_stadium_1793884336463.jpg';
+            }
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/40" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.12)_0%,transparent_70%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.15)_0%,transparent_70%)]" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
@@ -78,28 +86,27 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ event, onBookTickets, 
           </p>
         </div>
 
-        {/* CLUBS SHOWDOWN - Left: Home Club, Center: VS & Countdown, Right: Away Club */}
+        {/* CLUBS SHOWDOWN - Left: Home Club (Bayern), Center: VS & Countdown, Right: Away Club (Ajax) */}
         <div className="my-8 sm:my-12 rounded-2xl border border-slate-800/90 bg-slate-900/70 p-6 sm:p-10 backdrop-blur-md shadow-2xl">
           <div className="grid grid-cols-1 md:grid-cols-11 items-center gap-6 sm:gap-8">
             
-            {/* HOME CLUB (Left) */}
+            {/* HOME CLUB: FC BAYERN MUNICH (Left) */}
             <div className="md:col-span-4 flex flex-col items-center md:items-end text-center md:text-right group">
-              <div className="relative mb-4 flex h-32 w-32 sm:h-40 sm:w-40 items-center justify-center rounded-2xl p-2 bg-gradient-to-br from-white/10 to-transparent border border-white/10 shadow-lg group-hover:scale-105 transition-transform">
-                <img
-                  src={event.homeTeam.crestUrl}
-                  alt={`${event.homeTeam.name} Official Club Crest`}
+              <div className="relative mb-4 flex h-32 w-32 sm:h-40 sm:w-40 items-center justify-center rounded-2xl p-3 bg-gradient-to-br from-white/10 to-transparent border border-white/10 shadow-lg group-hover:scale-105 transition-transform">
+                <TeamCrest
+                  teamIdOrName={event.homeTeam.name}
                   className="h-full w-full object-contain filter drop-shadow-[0_8px_16px_rgba(220,5,45,0.4)]"
-                  referrerPolicy="no-referrer"
+                  imgFallbackUrl={event.homeTeam.crestUrl}
                 />
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                 {event.homeTeam.name}
               </h2>
               <p className="text-sm font-semibold text-red-400">
-                {event.homeTeam.country} · {event.homeTeam.squadHighlights?.[0] || 'European Champions'}
+                {event.homeTeam.country} · {event.homeTeam.squadHighlights?.[0] || 'UEFA Champions League Winners (6x)'}
               </p>
               <div className="mt-2 text-xs text-slate-400 hidden sm:block">
-                {event.homeTeam.squadHighlights?.[1] || 'Elite Continental Heavyweights'}
+                {event.homeTeam.squadHighlights?.[1] || 'German Bundesliga Giants · Treble Winners'}
               </div>
             </div>
 
@@ -150,24 +157,23 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ event, onBookTickets, 
               </div>
             </div>
 
-            {/* AWAY CLUB: FC BAYERN MUNICH (Right) */}
+            {/* AWAY CLUB: AFC AJAX AMSTERDAM (Right) */}
             <div className="md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left group">
-              <div className="relative mb-4 flex h-32 w-32 sm:h-40 sm:w-40 items-center justify-center rounded-2xl p-2 bg-gradient-to-br from-white/10 to-transparent border border-white/10 shadow-lg group-hover:scale-105 transition-transform">
-                <img
-                  src={event.awayTeam.crestUrl}
-                  alt="FC Bayern Munich Official Club Crest"
-                  className="h-full w-full object-contain filter drop-shadow-[0_8px_16px_rgba(220,5,45,0.4)]"
-                  referrerPolicy="no-referrer"
+              <div className="relative mb-4 flex h-32 w-32 sm:h-40 sm:w-40 items-center justify-center rounded-2xl p-3 bg-gradient-to-br from-white/10 to-transparent border border-white/10 shadow-lg group-hover:scale-105 transition-transform">
+                <TeamCrest
+                  teamIdOrName={event.awayTeam.name}
+                  className="h-full w-full object-contain filter drop-shadow-[0_8px_16px_rgba(210,18,46,0.4)]"
+                  imgFallbackUrl={event.awayTeam.crestUrl}
                 />
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                 {event.awayTeam.name}
               </h2>
-              <p className="text-sm font-semibold text-sky-400">
-                Munich, Germany · 6x European Champions
+              <p className="text-sm font-semibold text-red-400">
+                {event.awayTeam.country} · {event.awayTeam.squadHighlights?.[0] || 'European Champions (4x)'}
               </p>
               <div className="mt-2 text-xs text-slate-400 hidden sm:block">
-                German Bundesliga Dominance · Record Treble Winners
+                {event.awayTeam.squadHighlights?.[1] || 'Total Football Heritage · Johan Cruyff Philosophy'}
               </div>
             </div>
 

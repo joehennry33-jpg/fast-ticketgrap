@@ -476,7 +476,17 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                       : 'border-slate-800 bg-slate-900 text-slate-400 hover:border-slate-700'
                   }`}
                 >
-                  <img src="/src/assets/mpesa.svg" alt="M-PESA" className="h-6 object-contain" />
+                  <img
+                    src="/mpesa.svg"
+                    alt="M-PESA"
+                    className="h-6 object-contain"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      if (!target.src.endsWith('/mpesa.svg')) {
+                        target.src = '/mpesa.svg';
+                      }
+                    }}
+                  />
                   <span className="text-[11px] font-bold">M-PESA STK Push</span>
                 </button>
 

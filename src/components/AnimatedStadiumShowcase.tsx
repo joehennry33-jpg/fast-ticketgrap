@@ -16,7 +16,7 @@ export const AnimatedStadiumShowcase: React.FC<AnimatedStadiumShowcaseProps> = (
   const stadiumSlides = [
     {
       id: 'aerial-exterior',
-      src: '/src/assets/images/talanta_stadium_exterior_1793884338380.jpg',
+      src: '/images/talanta_stadium_exterior_1793884338380.jpg',
       label: 'Aerial Architectural Exterior',
       title: 'Raila Odinga International Stadium · Aerial Twilight View',
       description: 'The iconic aerodynamic shield roof inspired by Kenyan athletic heritage along Ngong Road, Nairobi.',
@@ -24,7 +24,7 @@ export const AnimatedStadiumShowcase: React.FC<AnimatedStadiumShowcaseProps> = (
     },
     {
       id: 'interior-pitch',
-      src: '/src/assets/images/talanta_stadium_interior_1793884339280.jpg',
+      src: '/images/talanta_stadium_interior_1793884339280.jpg',
       label: 'Main Pitch & Grandstand Bowl',
       title: 'Spectator Seating & Hybrid Grass Pitch',
       description: 'FIFA Category 4 reinforced hybrid natural turf pitch with unobstructed 360° grandstand sightlines.',
@@ -32,7 +32,7 @@ export const AnimatedStadiumShowcase: React.FC<AnimatedStadiumShowcaseProps> = (
     },
     {
       id: 'vvip-hospitality',
-      src: '/src/assets/images/stadium_vip_hospitality_1793884338239.jpg',
+      src: '/images/stadium_vip_hospitality_1793884338239.jpg',
       label: 'VVIP Presidential Hospitality',
       title: 'Climate-Controlled Executive Hospitality Suites',
       description: 'Floor-to-ceiling panoramic pitch glass windows, 5-course gourmet dining, and private tunnel club access.',
@@ -40,7 +40,7 @@ export const AnimatedStadiumShowcase: React.FC<AnimatedStadiumShowcaseProps> = (
     },
     {
       id: 'matchday-atmosphere',
-      src: '/src/assets/images/hero_football_stadium_1793884336463.jpg',
+      src: '/images/hero_football_stadium_1793884336463.jpg',
       label: 'Matchday Floodlight Atmosphere',
       title: 'High-Intensity Night Match Lighting',
       description: 'State-of-the-art 2,400 Lux broadcast-ready LED floodlight towers for optimal evening kickoff clarity.',
@@ -77,6 +77,12 @@ export const AnimatedStadiumShowcase: React.FC<AnimatedStadiumShowcaseProps> = (
                 index === currentIndex ? 'scale-105' : 'scale-100'
               }`}
               referrerPolicy="no-referrer"
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (!target.src.includes('/images/')) {
+                  target.src = `/images/${slide.src.split('/').pop()}`;
+                }
+              }}
             />
             {/* Scrim Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-slate-950/20" />

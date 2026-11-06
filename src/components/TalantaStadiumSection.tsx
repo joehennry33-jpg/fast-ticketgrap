@@ -14,28 +14,28 @@ export const TalantaStadiumSection: React.FC<TalantaStadiumSectionProps> = ({ on
       id: 'ext-1',
       title: 'Raila Odinga International Stadium - Aerial Twilight Architecture',
       category: 'Exterior Architecture',
-      src: '/src/assets/images/talanta_stadium_exterior_1793884338380.jpg',
+      src: '/images/talanta_stadium_exterior_1793884338380.jpg',
       caption: 'Aerial rendering of the 60,000-seat flagship stadium along Ngong Road, Nairobi, highlighting its aerodynamic shield-inspired canopy roof.'
     },
     {
       id: 'int-1',
       title: 'Interior Pitch & Grandstand Spectator Seating',
       category: 'Spectator Bowl',
-      src: '/src/assets/images/talanta_stadium_interior_1793884339280.jpg',
+      src: '/images/talanta_stadium_interior_1793884339280.jpg',
       caption: 'Full-bowl sightlines, hybrid reinforced natural grass pitch, and two-tier covered grandstands engineered for optimal acoustic energy.'
     },
     {
       id: 'vip-1',
       title: 'Presidential & Executive Hospitality Lounges',
       category: 'VVIP Experience',
-      src: '/src/assets/images/stadium_vip_hospitality_1793884338239.jpg',
+      src: '/images/stadium_vip_hospitality_1793884338239.jpg',
       caption: 'Panoramic climate-controlled presidential suites offering pitch views, gourmet catering, and private lounge areas.'
     },
     {
       id: 'action-1',
       title: 'Elite Football Action & Stadium Atmosphere',
       category: 'Matchday Energy',
-      src: '/src/assets/images/football_action_match_1793884339014.jpg',
+      src: '/images/football_action_match_1793884339014.jpg',
       caption: 'State-of-the-art match floodlights designed to FIFA Category 4 broadcast standards for night match spectacles.'
     }
   ];
@@ -85,15 +85,21 @@ export const TalantaStadiumSection: React.FC<TalantaStadiumSectionProps> = ({ on
           <div className="lg:col-span-7 group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-xl">
             <div className="relative aspect-video w-full overflow-hidden">
               <img
-                src="/src/assets/images/talanta_stadium_exterior_1793884338380.jpg"
-                alt="Talanta Sports City Stadium Nairobi Aerial Exterior"
+                src="/images/talanta_stadium_exterior_1793884338380.jpg"
+                alt="Raila Odinga International Stadium Nairobi Aerial Exterior"
                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 referrerPolicy="no-referrer"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (!target.src.includes('/images/')) {
+                    target.src = '/images/talanta_stadium_exterior_1793884338380.jpg';
+                  }
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
               <button
-                onClick={() => setActivePhotoModal('/src/assets/images/talanta_stadium_exterior_1793884338380.jpg')}
-                className="absolute top-4 right-4 flex h-9 w-9 items-center justify-center rounded-lg bg-black/60 text-white hover:bg-red-600 transition-colors"
+                onClick={() => setActivePhotoModal('/images/talanta_stadium_exterior_1793884338380.jpg')}
+                className="absolute top-4 right-4 flex h-9 w-9 items-center justify-center rounded-lg bg-black/60 text-white hover:bg-red-600 transition-colors cursor-pointer"
                 title="View Full Resolution"
               >
                 <Maximize2 className="h-4 w-4" />

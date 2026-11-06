@@ -7,7 +7,7 @@ export const initialTeams: Record<string, Team> = {
     shortName: 'BAYERN',
     country: 'Germany',
     foundedYear: 1900,
-    crestUrl: '/src/assets/teams/bayern.svg',
+    crestUrl: '/teams/bayern.svg',
     primaryColor: '#DC052D',
     secondaryColor: '#0066B2',
     squadHighlights: ['UEFA Champions League Winners (6x)', 'German Bundesliga Giants', 'Record-Breaking Treble Winners']
@@ -18,7 +18,7 @@ export const initialTeams: Record<string, Team> = {
     shortName: 'AJAX',
     country: 'Netherlands',
     foundedYear: 1900,
-    crestUrl: '/src/assets/teams/ajax.svg',
+    crestUrl: '/teams/ajax.svg',
     primaryColor: '#D2122E',
     secondaryColor: '#FFFFFF',
     squadHighlights: ['European Champions (4x)', 'Legendary Total Football Heritage', 'World-Class Youth Academy']
@@ -41,7 +41,7 @@ export const initialEvent: MatchEvent = {
   status: 'CONFIRMED',
   isFlagship: true,
   disclaimerText: 'CONFIRMED EVENT: Scheduled for Tuesday, 5 January 2027 at the new Raila Odinga International Stadium (Talanta Stadium), Nairobi. Gates open early at 11:00 AM with kickoff at 8:15 PM Kenyan time. All ticket purchases protected by KickPass Kenya Guarantee.',
-  bannerImageUrl: '/src/assets/images/hero_football_stadium_1793884336463.jpg',
+  bannerImageUrl: '/images/hero_football_stadium_1793884336463.jpg',
   description: 'European champions clash in Nairobi! FC Bayern Munich take on AFC Ajax Amsterdam on Tuesday, 5 January 2027 at the state-of-the-art 60,000-seater Raila Odinga International Stadium (Talanta Stadium) along Ngong Road. Experience unforgettable matchday intensity under the stadium floodlights.',
   rulesAndEntry: [
     'Every attendee must present a valid, scannable KickPass QR electronic ticket (mobile screen or printed A4 page).',

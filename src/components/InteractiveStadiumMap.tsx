@@ -66,17 +66,17 @@ export const InteractiveStadiumMap: React.FC<InteractiveStadiumMapProps> = ({
             >
               <defs>
                 <radialGradient id="pitchGrad" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stop-color="#15803d" />
-                  <stop offset="100%" stop-color="#166534" />
+                  <stop offset="0%" stopColor="#15803d" />
+                  <stop offset="100%" stopColor="#166534" />
                 </radialGradient>
                 <filter id="zoneGlow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#ffffff" flood-opacity="0.4" />
+                  <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#ffffff" floodOpacity="0.4" />
                 </filter>
               </defs>
 
               {/* Outer Stadium Concrete Oval Perimeter */}
-              <ellipse cx="300" cy="300" rx="285" ry="260" fill="#0f172a" stroke="#1e293b" stroke-width="4" />
-              <ellipse cx="300" cy="300" rx="270" ry="245" fill="#1e293b" stroke="#334155" stroke-width="2" />
+              <ellipse cx="300" cy="300" rx="285" ry="260" fill="#0f172a" stroke="#1e293b" strokeWidth={4} />
+              <ellipse cx="300" cy="300" rx="270" ry="245" fill="#1e293b" stroke="#334155" strokeWidth={2} />
 
               {/* ZONE 1: Regular Upper Tier (Outer Perimeter Ring) */}
               <ellipse
@@ -181,25 +181,25 @@ export const InteractiveStadiumMap: React.FC<InteractiveStadiumMapProps> = ({
               />
 
               {/* CENTRAL FOOTBALL PITCH */}
-              <rect x="220" y="210" width="160" height="180" rx="4" fill="url(#pitchGrad)" stroke="#ffffff" stroke-width="2" />
+              <rect x="220" y="210" width="160" height="180" rx="4" fill="url(#pitchGrad)" stroke="#ffffff" strokeWidth={2} />
               {/* Halfway line */}
-              <line x1="220" y1="300" x2="380" y2="300" stroke="#ffffff" stroke-width="1.5" />
+              <line x1="220" y1="300" x2="380" y2="300" stroke="#ffffff" strokeWidth={1.5} />
               {/* Center Circle */}
-              <circle cx="300" cy="300" r="26" fill="none" stroke="#ffffff" stroke-width="1.5" />
+              <circle cx="300" cy="300" r="26" fill="none" stroke="#ffffff" strokeWidth={1.5} />
               <circle cx="300" cy="300" r="2" fill="#ffffff" />
               {/* North Penalty Box */}
-              <rect x="260" y="210" width="80" height="32" fill="none" stroke="#ffffff" stroke-width="1.5" />
-              <rect x="280" y="210" width="40" height="14" fill="none" stroke="#ffffff" stroke-width="1.5" />
+              <rect x="260" y="210" width="80" height="32" fill="none" stroke="#ffffff" strokeWidth={1.5} />
+              <rect x="280" y="210" width="40" height="14" fill="none" stroke="#ffffff" strokeWidth={1.5} />
               {/* South Penalty Box */}
-              <rect x="260" y="348" width="80" height="42" fill="none" stroke="#ffffff" stroke-width="1.5" />
-              <rect x="280" y="376" width="40" height="14" fill="none" stroke="#ffffff" stroke-width="1.5" />
+              <rect x="260" y="348" width="80" height="42" fill="none" stroke="#ffffff" strokeWidth={1.5} />
+              <rect x="280" y="376" width="40" height="14" fill="none" stroke="#ffffff" strokeWidth={1.5} />
 
               {/* Label Text Overlays */}
-              <text x="300" y="180" font-size="11" font-weight="bold" fill="#000000" text-anchor="middle">VVIP ROYAL BOX</text>
-              <text x="186" y="305" font-size="9" font-weight="bold" fill="#ffffff" text-anchor="middle" transform="rotate(-90 186 305)">VIP MAIN</text>
-              <text x="300" y="145" font-size="10" font-weight="bold" fill="#ffffff" text-anchor="middle">NORTH CURVA</text>
-              <text x="300" y="465" font-size="10" font-weight="bold" fill="#ffffff" text-anchor="middle">SOUTH CURVA</text>
-              <text x="418" y="305" font-size="9" font-weight="bold" fill="#ffffff" text-anchor="middle" transform="rotate(90 418 305)">EAST LOWER</text>
+              <text x="300" y="180" fontSize={11} fontWeight="bold" fill="#000000" textAnchor="middle">VVIP ROYAL BOX</text>
+              <text x="186" y="305" fontSize={9} fontWeight="bold" fill="#ffffff" textAnchor="middle" transform="rotate(-90 186 305)">VIP MAIN</text>
+              <text x="300" y="145" fontSize={10} fontWeight="bold" fill="#ffffff" textAnchor="middle">NORTH CURVA</text>
+              <text x="300" y="465" fontSize={10} fontWeight="bold" fill="#ffffff" textAnchor="middle">SOUTH CURVA</text>
+              <text x="418" y="305" fontSize={9} fontWeight="bold" fill="#ffffff" textAnchor="middle" transform="rotate(90 418 305)">EAST LOWER</text>
             </svg>
           </div>
         </div>

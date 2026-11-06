@@ -13,14 +13,14 @@ export default function handler(_req: any, res: any) {
           name: 'FC Bayern Munich',
           shortName: 'BAYERN',
           country: 'Germany',
-          crestUrl: '/src/assets/teams/bayern.svg'
+          crestUrl: '/teams/bayern.svg'
         },
         awayTeam: {
           id: 'team-ajax',
           name: 'AFC Ajax Amsterdam',
           shortName: 'AJAX',
           country: 'Netherlands',
-          crestUrl: '/src/assets/teams/ajax.svg'
+          crestUrl: '/teams/ajax.svg'
         },
         eventDate: '2027-01-05T17:15:00.000Z',
         kickoffTime: '8:15 PM (Kenyan time)',
