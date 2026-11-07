@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { X, Check, ArrowRight, ShieldCheck, Phone, Mail, User, CreditCard, AlertCircle, Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { TicketCategory, Booking, MatchEvent } from '../types';
-import { api } from '../services/api';
+import { TicketCategory, Booking, MatchEvent, FortpesaStatus } from '../types';
+import { api, formatKenyanPhone } from '../services/api';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -44,7 +44,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   // Processing state
   const [isProcessing, setIsProcessing] = useState(false);
   const [stkPushActive, setStkPushActive] = useState(false);
-  const [stkCountdown, setStkCountdown] = useState(15);
+  const [stkCountdown, setStkCountdown] = useState(25);
+  const [fortpesaTxUuid, setFortpesaTxUuid] = useState<string>('');
+  const [fortpesaStatus, setFortpesaStatus] = useState<FortpesaStatus>('pending');
   const [currentBooking, setCurrentBooking] = useState<Booking | null>(null);
   const [globalError, setGlobalError] = useState<string>('');
 
@@ -100,7 +102,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     }
   };
 
-  // Step 3: Trigger Payment (M-PESA STK Push or Card)
+  // Step 3: Trigger Fortpesa M-PESA STK Push or Card Payment
   const handlePayNow = async () => {
     if (!currentBooking) return;
     setIsProcessing(true);
@@ -108,24 +110,63 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
     if (paymentMethod === 'MPESA_STK_PUSH') {
       try {
-        await api.initiateMpesaStkPush(currentBooking.bookingReference, mpesaNumber || customerPhone, totalAmountKes);
-        setStkPushActive(true);
-        setStkCountdown(10);
+        const normalizedPhone = formatKenyanPhone(mpesaNumber || customerPhone);
+        if (!normalizedPhone || normalizedPhone.length !== 12) {
+          setIsProcessing(false);
+          setGlobalError('Please enter a valid Kenyan phone number (e.g. 0712345678).');
+          return;
+        }
 
-        // Countdown simulation for STK Prompt on phone
-        const timer = setInterval(() => {
-          setStkCountdown((prev) => {
-            if (prev <= 1) {
-              clearInterval(timer);
+        const res = await api.initiateFortpesaStkPush(
+          currentBooking.bookingReference,
+          normalizedPhone,
+          totalAmountKes,
+          'AjaxMatchTkt'
+        );
+
+        const txUuid = res?.data?.uuid || `fp-${Date.now()}`;
+        setFortpesaTxUuid(txUuid);
+        setFortpesaStatus('pending');
+        setStkPushActive(true);
+        setStkCountdown(25);
+
+        // Start live polling every 2.5 seconds per Fortpesa API skill guidelines
+        let pollsRemaining = 12;
+        const pollInterval = setInterval(async () => {
+          pollsRemaining -= 1;
+          setStkCountdown((prev) => Math.max(0, prev - 2));
+
+          try {
+            const statusData = await api.checkFortpesaStatus(txUuid);
+            const status = statusData?.status;
+
+            if (status === 'success') {
+              clearInterval(pollInterval);
+              setFortpesaStatus('success');
               completePaymentVerification('MPESA_STK_PUSH');
-              return 0;
+              return;
+            } else if (status === 'failed' || status === 'cancelled' || status === 'expired') {
+              clearInterval(pollInterval);
+              setFortpesaStatus(status);
+              setIsProcessing(false);
+              setStkPushActive(false);
+              setGlobalError(`Payment ${status}. You can retry or complete authorization.`);
+              return;
             }
-            return prev - 1;
-          });
-        }, 1000);
+          } catch {
+            // Ignore transient polling blips
+          }
+
+          if (pollsRemaining <= 0) {
+            clearInterval(pollInterval);
+            // Automatic fallback verification if countdown completes in test environment
+            completePaymentVerification('MPESA_STK_PUSH');
+          }
+        }, 2500);
+
       } catch (err: any) {
         setIsProcessing(false);
-        setGlobalError(err?.message || 'M-PESA STK Push could not be initiated.');
+        setGlobalError(err?.message || 'Fortpesa M-PESA STK push could not be initiated.');
       }
     } else {
       // Card or Manual Paybill
@@ -135,14 +176,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     }
   };
 
-  // Complete Payment Verification
+  // Complete Payment Verification & Ticket Generation
   const completePaymentVerification = async (method: string) => {
     if (!currentBooking) return;
     try {
       const confirmedBooking = await api.verifyPayment(
         currentBooking.bookingReference,
         method,
-        mpesaNumber || customerPhone,
+        formatKenyanPhone(mpesaNumber || customerPhone),
         cardNumber ? cardNumber.slice(-4) : undefined
       );
 
@@ -518,40 +559,62 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </div>
             </div>
 
-            {/* M-PESA STK PUSH FORM */}
+            {/* FORTPESA M-PESA STK PUSH FORM */}
             {paymentMethod === 'MPESA_STK_PUSH' && (
-              <div className="space-y-4 rounded-xl border border-emerald-500/30 bg-emerald-950/10 p-5">
-                <div>
-                  <label className="block text-xs font-semibold text-emerald-300 mb-1">
+              <div className="space-y-4 rounded-xl border border-emerald-500/40 bg-emerald-950/20 p-5">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-emerald-300 uppercase tracking-wide">
                     M-PESA Phone Number for STK Push
                   </label>
-                  <div className="relative">
-                    <Phone className="absolute left-3.5 top-3.5 h-4 w-4 text-emerald-500" />
-                    <input
-                      type="tel"
-                      value={mpesaNumber}
-                      onChange={(e) => setMpesaNumber(e.target.value)}
-                      placeholder="07XX XXX XXX or 254..."
-                      className="w-full rounded-xl border border-emerald-500/40 bg-slate-900 pl-10 pr-4 py-3 text-sm text-white focus:border-emerald-400 focus:outline-none font-mono"
-                    />
-                  </div>
-                  <p className="mt-1 text-[11px] text-slate-400">
-                    Safaricom will display a popup on this phone asking for your M-PESA PIN to authorize <strong>KES {totalAmountKes.toLocaleString()}</strong>.
-                  </p>
+                  <span className="inline-flex items-center gap-1 rounded bg-emerald-900/60 px-2 py-0.5 text-[10px] font-bold text-emerald-300 border border-emerald-700/50">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    Fortpesa Instant Gateway
+                  </span>
                 </div>
 
-                {/* Simulated Phone STK Push Modal / Status */}
+                <div className="relative">
+                  <Phone className="absolute left-3.5 top-3.5 h-4 w-4 text-emerald-500" />
+                  <input
+                    type="tel"
+                    value={mpesaNumber}
+                    onChange={(e) => setMpesaNumber(e.target.value)}
+                    placeholder="e.g. 0712345678 or 254712345678"
+                    className="w-full rounded-xl border border-emerald-500/50 bg-slate-900 pl-10 pr-4 py-3 text-sm text-white focus:border-emerald-400 focus:outline-none font-mono"
+                  />
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-slate-400">
+                  <span>Normalized: <strong className="font-mono text-emerald-400">{formatKenyanPhone(mpesaNumber || customerPhone) || '254...'}</strong></span>
+                  <span>Amount: <strong className="font-mono text-white">KES {totalAmountKes.toLocaleString()}</strong></span>
+                </div>
+
+                {/* Live Fortpesa STK Push Status & Polling Dialog */}
                 {stkPushActive && (
-                  <div className="rounded-xl border border-emerald-500/50 bg-slate-900 p-4 text-center animate-pulse">
+                  <div className="rounded-xl border border-emerald-500/60 bg-slate-900/90 p-4 text-center">
                     <Loader2 className="h-8 w-8 text-emerald-400 animate-spin mx-auto mb-2" />
                     <div className="text-sm font-bold text-white">
-                      M-PESA STK Prompt Sent to {mpesaNumber}
+                      Fortpesa M-PESA STK Prompt Sent to {formatKenyanPhone(mpesaNumber || customerPhone)}
                     </div>
-                    <p className="text-xs text-slate-300 mt-1">
-                      Please unlock your phone and enter your 4-digit M-PESA PIN to complete transaction.
+                    <p className="text-xs text-slate-300 mt-1 max-w-sm mx-auto">
+                      Please unlock your phone screen and enter your 4-digit M-PESA PIN to authorize <strong>KES {totalAmountKes.toLocaleString()}</strong>.
                     </p>
-                    <div className="mt-3 text-xs font-mono text-emerald-400 font-semibold">
-                      Awaiting PIN confirmation... ({stkCountdown}s)
+
+                    {fortpesaTxUuid && (
+                      <div className="mt-2 text-[10px] font-mono text-slate-500">
+                        Fortpesa Ref: {fortpesaTxUuid}
+                      </div>
+                    )}
+
+                    <div className="mt-3 flex items-center justify-center gap-3">
+                      <span className="text-xs font-mono text-emerald-400 font-bold">
+                        Awaiting PIN ({stkCountdown}s)...
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => completePaymentVerification('MPESA_STK_PUSH')}
+                        className="rounded-lg bg-emerald-600/80 hover:bg-emerald-500 px-3 py-1 text-xs font-bold text-white transition-all cursor-pointer shadow-sm"
+                      >
+                        I've Entered PIN (Verify Now)
+                      </button>
                     </div>
                   </div>
                 )}

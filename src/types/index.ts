@@ -113,3 +113,22 @@ export interface TicketVerificationResult {
   gate: string;
   code: 'SUCCESS_FIRST_ENTRY' | 'DENIED_DUPLICATE_ENTRY' | 'DENIED_NOT_FOUND' | 'DENIED_REVOKED';
 }
+
+export type FortpesaStatus = 'pending' | 'processing' | 'success' | 'failed' | 'cancelled' | 'expired';
+
+export interface FortpesaStkResponse {
+  uuid: string;
+  status: FortpesaStatus;
+  amount: number;
+  phone: string;
+  account_reference: string;
+  receipt_number?: string;
+  result_description?: string;
+  isSimulated?: boolean;
+}
+
+export interface FortpesaWalletBalance {
+  balance: number;
+  currency: string;
+  simulated?: boolean;
+}

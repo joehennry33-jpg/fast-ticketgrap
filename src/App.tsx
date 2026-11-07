@@ -17,6 +17,7 @@ import { ElectronicTicketModal } from './components/ElectronicTicketModal';
 import { GateScannerModal } from './components/GateScannerModal';
 import { CustomerDashboardModal } from './components/CustomerDashboardModal';
 import { AdminDashboardModal } from './components/AdminDashboardModal';
+import { TeamCrest } from './components/TeamCrest';
 import { Trophy, Calendar, MapPin, Users, Shield, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 export default function App() {
@@ -110,23 +111,21 @@ export default function App() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
               
-              {/* Ajax Amsterdam Profile */}
+              {/* Home Team Profile: FC Bayern Munich */}
               <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6 sm:p-8 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center gap-4 mb-4">
-                    <img
-                      src={event.homeTeam.crestUrl}
-                      alt={event.homeTeam.name}
-                      className="h-16 w-16 object-contain"
-                    />
+                    <div className="h-16 w-16 p-1.5 rounded-xl bg-white/5 border border-white/10 shrink-0 flex items-center justify-center">
+                      <TeamCrest teamIdOrName={event.homeTeam.name} className="h-full w-full object-contain" />
+                    </div>
                     <div>
-                      <div className="text-xs text-red-400 font-bold uppercase tracking-wider">Dutch Football Royalty</div>
+                      <div className="text-xs text-red-400 font-bold uppercase tracking-wider">German Football Powerhouse</div>
                       <h3 className="text-2xl font-black text-white">{event.homeTeam.name}</h3>
-                      <p className="text-xs text-slate-400">Founded 1900 · Johan Cruyff Arena, Amsterdam</p>
+                      <p className="text-xs text-slate-400">Founded 1900 · Allianz Arena, Munich · Bundesliga</p>
                     </div>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6">
-                    Renowned globally for pioneering "Total Football", AFC Ajax boasts 4 European Champions League titles, 36 Eredivisie championships, and one of world football's most celebrated academies (De Toekomst).
+                    Germany’s most decorated sporting institution. FC Bayern Munich has conquered Europe 6 times and claimed 33 German league championships, known worldwide for elite tactical discipline and attacking dominance.
                   </p>
                   <div className="space-y-2">
                     <div className="text-xs font-semibold text-slate-400">Club Legacy Highlights:</div>
@@ -142,30 +141,28 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Bayern Munich Profile */}
+              {/* Away Team Profile: AFC Ajax Amsterdam */}
               <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6 sm:p-8 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center gap-4 mb-4">
-                    <img
-                      src={event.awayTeam.crestUrl}
-                      alt={event.awayTeam.name}
-                      className="h-16 w-16 object-contain"
-                    />
+                    <div className="h-16 w-16 p-1.5 rounded-xl bg-white/5 border border-white/10 shrink-0 flex items-center justify-center">
+                      <TeamCrest teamIdOrName={event.awayTeam.name} className="h-full w-full object-contain" />
+                    </div>
                     <div>
-                      <div className="text-xs text-sky-400 font-bold uppercase tracking-wider">German Football Powerhouse</div>
+                      <div className="text-xs text-red-400 font-bold uppercase tracking-wider">Dutch Football Royalty</div>
                       <h3 className="text-2xl font-black text-white">{event.awayTeam.name}</h3>
-                      <p className="text-xs text-slate-400">Founded 1900 · Allianz Arena, Munich</p>
+                      <p className="text-xs text-slate-400">Founded 1900 · Johan Cruyff Arena, Amsterdam · Eredivisie</p>
                     </div>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6">
-                    Germany’s most decorated sporting institution. FC Bayern Munich has conquered Europe 6 times and claimed 33 German league titles, known worldwide for tactical precision and attacking football.
+                    Renowned globally for pioneering "Total Football", AFC Ajax boasts 4 European Champions League titles, 36 Eredivisie championships, and one of world football's most celebrated academies (De Toekomst).
                   </p>
                   <div className="space-y-2">
                     <div className="text-xs font-semibold text-slate-400">Club Legacy Highlights:</div>
                     <ul className="space-y-1.5 text-xs text-slate-300">
                       {event.awayTeam.squadHighlights?.map((item, i) => (
                         <li key={i} className="flex items-center gap-2">
-                          <CheckCircle2 className="h-3.5 w-3.5 text-sky-400 shrink-0" />
+                          <CheckCircle2 className="h-3.5 w-3.5 text-red-500 shrink-0" />
                           <span>{item}</span>
                         </li>
                       ))}

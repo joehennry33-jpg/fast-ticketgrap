@@ -241,7 +241,258 @@ app.post('/api/bookings', (req: Request, res: Response) => {
   });
 });
 
-// Initiate M-PESA STK Push
+// Fortpesa Transaction Memory Store
+interface FortpesaTxRecord {
+  uuid: string;
+  bookingReference: string;
+  phone: string;
+  amount: number;
+  channel_id: number;
+  status: 'pending' | 'processing' | 'success' | 'failed' | 'cancelled' | 'expired';
+  receipt_number?: string;
+  result_description?: string;
+  createdAt: string;
+  updatedAt: string;
+  isSimulated?: boolean;
+}
+
+let fortpesaTransactions: FortpesaTxRecord[] = [];
+
+function formatKenyanPhone(phone: string): string {
+  let clean = (phone || '').replace(/[^0-9]/g, '');
+  if (clean.startsWith('0') && clean.length === 10) {
+    clean = '254' + clean.slice(1);
+  } else if ((clean.startsWith('7') || clean.startsWith('1')) && clean.length === 9) {
+    clean = '254' + clean;
+  }
+  return clean;
+}
+
+// ==========================================
+// FORTPESA M-PESA GATEWAY ROUTES (https://fortpesa.co.ke/skill)
+// ==========================================
+
+// 1. FORTPESA STK PUSH INITIATION
+app.post('/api/payments/fortpesa/stk', async (req: Request, res: Response) => {
+  try {
+    const { bookingReference, phoneNumber, amountKes, description } = req.body;
+    if (!phoneNumber || !bookingReference) {
+      return res.status(400).json({ success: false, message: 'Phone number and booking reference are required.' });
+    }
+
+    const phone = formatKenyanPhone(phoneNumber);
+    if (!phone || phone.length !== 12 || !phone.startsWith('254')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid phone format. Please enter a valid 10-digit Kenyan phone number (e.g. 0712345678).'
+      });
+    }
+
+    const amount = Math.max(1, Math.round(Number(amountKes) || 1000));
+    const channelId = Number(process.env.FORTPESA_CHANNEL_ID || 42);
+    const accountRef = String(bookingReference || 'KP-NAI-001').replace(/[^a-zA-Z0-9]/g, '').slice(0, 12);
+    const desc = String(description || 'AjaxBayern').replace(/[^a-zA-Z0-9]/g, '').slice(0, 13);
+    const apiKey = process.env.FORTPESA_API_KEY;
+
+    // Live Fortpesa API call if live key is present
+    if (apiKey && apiKey.startsWith('pb_live_')) {
+      const idempotencyKey = `idemp-${bookingReference}-${Date.now()}`;
+      const fortpesaRes = await fetch('https://fortpesa.co.ke/api/v1/payments/stk', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'Idempotency-Key': idempotencyKey
+        },
+        body: JSON.stringify({
+          amount,
+          phone,
+          channel_id: channelId,
+          account_reference: accountRef,
+          description: desc
+        })
+      });
+
+      const responseText = await fortpesaRes.text();
+      let responseData: any = {};
+      try {
+        responseData = JSON.parse(responseText);
+      } catch (e) {
+        responseData = { message: responseText };
+      }
+
+      if (!fortpesaRes.ok) {
+        const errorMsg = responseData?.message || responseData?.error || `Fortpesa error (HTTP ${fortpesaRes.status})`;
+        return res.status(fortpesaRes.status).json({
+          success: false,
+          message: errorMsg,
+          details: responseData
+        });
+      }
+
+      const tx = responseData.data || responseData;
+      fortpesaTransactions.unshift({
+        uuid: tx.uuid,
+        bookingReference,
+        phone,
+        amount,
+        channel_id: channelId,
+        status: tx.status || 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isSimulated: false
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: `M-PESA prompt initiated via Fortpesa. Check your phone (${phone}).`,
+        data: tx
+      });
+    }
+
+    // Graceful Sandbox simulation mode for local dev & testing
+    const simUuid = `fp-sim-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const simTx: FortpesaTxRecord = {
+      uuid: simUuid,
+      bookingReference,
+      phone,
+      amount,
+      channel_id: channelId,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isSimulated: true
+    };
+    fortpesaTransactions.unshift(simTx);
+
+    // Auto-advance simulated transaction after 7 seconds
+    setTimeout(() => {
+      const found = fortpesaTransactions.find(t => t.uuid === simUuid);
+      if (found && found.status === 'pending') {
+        found.status = 'success';
+        found.receipt_number = `MP${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${Math.floor(10000000 + Math.random() * 90000000)}`;
+        found.result_description = 'The service request is processed successfully.';
+        found.updatedAt = new Date().toISOString();
+      }
+    }, 7000);
+
+    return res.status(201).json({
+      success: true,
+      message: `Fortpesa M-PESA STK push sent. Please enter your PIN on phone (${phone}).`,
+      data: {
+        uuid: simUuid,
+        status: 'pending',
+        amount,
+        phone,
+        account_reference: accountRef,
+        isSimulated: true
+      }
+    });
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err?.message || 'Error communicating with Fortpesa gateway.'
+    });
+  }
+});
+
+// 2. FORTPESA STATUS POLLING
+app.get('/api/payments/fortpesa/status/:uuid', async (req: Request, res: Response) => {
+  try {
+    const { uuid } = req.params;
+    const apiKey = process.env.FORTPESA_API_KEY;
+
+    if (apiKey && apiKey.startsWith('pb_live_') && !uuid.startsWith('fp-sim-')) {
+      const fortpesaRes = await fetch(`https://fortpesa.co.ke/api/v1/transactions/${uuid}`, {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        }
+      });
+      const data = await fortpesaRes.json();
+      return res.json(data);
+    }
+
+    const found = fortpesaTransactions.find(t => t.uuid === uuid);
+    if (!found) {
+      return res.status(404).json({ success: false, message: 'Transaction not found' });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        uuid: found.uuid,
+        status: found.status,
+        amount: found.amount,
+        phone: found.phone,
+        receipt_number: found.receipt_number,
+        result_description: found.result_description || 'Pending PIN confirmation',
+        isSimulated: found.isSimulated
+      }
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, message: err?.message || 'Status query failed' });
+  }
+});
+
+// 3. FORTPESA WALLET BALANCE
+app.get('/api/payments/fortpesa/wallet', async (_req: Request, res: Response) => {
+  try {
+    const apiKey = process.env.FORTPESA_API_KEY;
+    if (apiKey && apiKey.startsWith('pb_live_')) {
+      const fortpesaRes = await fetch('https://fortpesa.co.ke/api/v1/wallet/balance', {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        }
+      });
+      const data = await fortpesaRes.json();
+      return res.json(data);
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        balance: 4850,
+        currency: 'KES',
+        channel_id: Number(process.env.FORTPESA_CHANNEL_ID || 42),
+        isConfigured: false,
+        message: 'Sandbox / Demo Wallet'
+      }
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, message: err?.message || 'Wallet check failed' });
+  }
+});
+
+// 4. FORTPESA WEBHOOK
+app.post('/api/payments/fortpesa-webhook', (req: Request, res: Response) => {
+  const signature = req.headers['x-fortpesa-signature'] as string;
+  const timestamp = req.headers['x-fortpesa-timestamp'] as string;
+  const secret = process.env.FORTPESA_WEBHOOK_SECRET;
+
+  const payload = req.body;
+  const tx = payload?.data;
+
+  if (secret && signature && timestamp) {
+    const hmac = crypto.createHmac('sha256', secret);
+    const expected = hmac.update(`${timestamp}.${JSON.stringify(payload)}`).digest('hex');
+    if (expected !== signature) {
+      return res.status(401).json({ success: false, message: 'Invalid signature' });
+    }
+  }
+
+  if (tx && tx.uuid) {
+    const existing = fortpesaTransactions.find(t => t.uuid === tx.uuid);
+    if (existing) {
+      existing.status = tx.status;
+      existing.receipt_number = tx.receipt_number;
+      existing.updatedAt = new Date().toISOString();
+    }
+  }
+
+  return res.status(200).json({ success: true, message: 'Webhook received' });
+});
+
+// Safaricom Legacy Direct STK Push
 app.post('/api/payments/stk-push', (req: Request, res: Response) => {
   const { bookingReference, phoneNumber, amountKes } = req.body;
 
@@ -249,7 +500,6 @@ app.post('/api/payments/stk-push', (req: Request, res: Response) => {
     return res.status(400).json({ success: false, message: 'Phone number and booking reference required' });
   }
 
-  // Simulate Safaricom Daraja STK Push handshake
   const checkoutRequestId = `ws_CO_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
   const merchantRequestId = `${Math.floor(1000000 + Math.random() * 9000000)}`;
 
@@ -487,7 +737,12 @@ app.get('/api/admin/stats', (_req: Request, res: Response) => {
         customerPhone: '***-***-****',
         customerIdNumber: '********'
       })),
-      recentLogs: verificationLogs.slice(0, 10)
+      recentLogs: verificationLogs.slice(0, 10),
+      fortpesaGateway: {
+        isConfigured: !!(process.env.FORTPESA_API_KEY && process.env.FORTPESA_API_KEY.startsWith('pb_live_')),
+        channelId: Number(process.env.FORTPESA_CHANNEL_ID || 42),
+        recentTransactions: fortpesaTransactions.slice(0, 20)
+      }
     }
   });
 });

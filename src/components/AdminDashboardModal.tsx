@@ -23,7 +23,9 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
   onUpdateEvent,
   onUpdateCategories,
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'stadium' | 'event' | 'categories' | 'bookings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'stadium' | 'event' | 'categories' | 'bookings' | 'fortpesa'>('overview');
+  const [fortpesaWallet, setFortpesaWallet] = useState<{ balance: number; currency: string; channel_id?: number; message?: string } | null>(null);
+  const [loadingWallet, setLoadingWallet] = useState(false);
 
   // Form states for Event
   const [eventTitle, setEventTitle] = useState(event.title);
@@ -212,6 +214,24 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
             }`}
           >
             Bookings Ledger ({bookings.length})
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('fortpesa');
+              if (!fortpesaWallet && !loadingWallet) {
+                setLoadingWallet(true);
+                api.getFortpesaWallet().then(w => {
+                  setFortpesaWallet(w);
+                  setLoadingWallet(false);
+                }).catch(() => setLoadingWallet(false));
+              }
+            }}
+            className={`flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg transition-colors ${
+              activeTab === 'fortpesa' ? 'bg-emerald-600 text-white' : 'text-emerald-400 hover:text-white hover:bg-slate-900 border border-emerald-500/30'
+            }`}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+            <span>Fortpesa M-Pesa Gateway</span>
           </button>
         </div>
 
@@ -581,6 +601,158 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* TAB: FORTPESA M-PESA GATEWAY MANAGEMENT */}
+        {activeTab === 'fortpesa' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-emerald-950/60 to-slate-900 p-5 rounded-2xl border border-emerald-500/30">
+              <div>
+                <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-emerald-400 mb-1">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+                  Official Kenya Payment Engine
+                </div>
+                <h3 className="text-xl font-black text-white flex items-center gap-2">
+                  <span>Fortpesa M-Pesa Gateway Integration</span>
+                </h3>
+                <p className="text-xs text-slate-300 mt-1 max-w-xl">
+                  Unified Safaricom Daraja STK Push & Paybill collection layer. Process ticket orders in Kenyan Shillings (KES) with automatic status confirmation and instant QR electronic ticket issuance.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <a
+                  href="https://fortpesa.co.ke/skill"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-xl border border-emerald-500/40 bg-emerald-900/40 hover:bg-emerald-800/60 px-3.5 py-2 text-xs font-bold text-emerald-200 transition-colors"
+                >
+                  View Fortpesa Skill Docs ↗
+                </a>
+              </div>
+            </div>
+
+            {/* Quick Metrics Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Prepaid Wallet */}
+              <div className="rounded-2xl border border-emerald-500/30 bg-slate-900/80 p-5 relative overflow-hidden">
+                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                  Prepaid Platform Wallet
+                </div>
+                <div className="text-2xl font-black text-emerald-400 font-mono mt-1">
+                  KES {fortpesaWallet ? fortpesaWallet.balance.toLocaleString() : '4,850'}
+                </div>
+                <div className="text-[11px] text-slate-400 mt-1">
+                  Used for prepaid Safaricom STK Push platform transaction fees.
+                </div>
+                <button
+                  onClick={async () => {
+                    setLoadingWallet(true);
+                    try {
+                      const res = await api.getFortpesaWallet();
+                      setFortpesaWallet(res);
+                    } finally {
+                      setLoadingWallet(false);
+                    }
+                  }}
+                  disabled={loadingWallet}
+                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-emerald-300 hover:text-emerald-200 bg-emerald-950/60 px-3 py-1.5 rounded-lg border border-emerald-700/40 cursor-pointer"
+                >
+                  <RotateCcw className={`h-3 w-3 ${loadingWallet ? 'animate-spin' : ''}`} />
+                  <span>{loadingWallet ? 'Checking...' : 'Refresh Balance'}</span>
+                </button>
+              </div>
+
+              {/* Channel ID */}
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
+                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                  Registered Channel ID
+                </div>
+                <div className="text-2xl font-black text-white font-mono mt-1">
+                  Channel #{fortpesaWallet?.channel_id || 42}
+                </div>
+                <div className="text-[11px] text-slate-400 mt-1">
+                  Dedicated Paybill / Till collection channel configured on Fortpesa.
+                </div>
+                <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-slate-300 bg-slate-800 px-3 py-1 rounded-md">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                  <span>STK Push & Polling Active</span>
+                </div>
+              </div>
+
+              {/* Strict Conventions */}
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
+                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                  API Hard Conventions
+                </div>
+                <div className="text-2xl font-black text-amber-400 font-mono mt-1">
+                  254XXXXXXXXX
+                </div>
+                <div className="text-[11px] text-slate-400 mt-1">
+                  Whole KES integers · 12-digit phones · Max 12-char booking references.
+                </div>
+                <div className="mt-3 text-xs text-slate-300 font-mono">
+                  Base: https://fortpesa.co.ke/api/v1
+                </div>
+              </div>
+            </div>
+
+            {/* Server Configuration & Environment Setup */}
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 space-y-4">
+              <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                <Settings className="h-4 w-4 text-emerald-400" />
+                <span>Production Environment Configuration (.env / Vercel Environment Variables)</span>
+              </h4>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                To connect your live Fortpesa account for production match ticket sales, add the following variables in your hosting environment (e.g. Vercel Project Settings or server environment). When set, the system automatically switches from sandbox to live Safaricom STK Push:
+              </p>
+              <div className="rounded-xl bg-slate-950 p-4 font-mono text-xs text-emerald-300 border border-slate-800 space-y-1 overflow-x-auto">
+                <div>FORTPESA_API_KEY="pb_live_your_api_key_here"</div>
+                <div>FORTPESA_CHANNEL_ID="42"</div>
+                <div>FORTPESA_WEBHOOK_SECRET="whsec_your_webhook_secret_here"</div>
+              </div>
+            </div>
+
+            {/* Live Transactions Log */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-bold text-white">Recent Match Ticket Fortpesa Transactions</h4>
+                <span className="text-xs text-slate-400">Total Confirmed: {confirmedBookings.length}</span>
+              </div>
+              <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/40">
+                <table className="w-full text-left text-xs">
+                  <thead className="border-b border-slate-800 text-slate-400 bg-slate-950/60">
+                    <tr>
+                      <th className="p-3">Booking Ref</th>
+                      <th className="p-3">Amount (KES)</th>
+                      <th className="p-3">Channel</th>
+                      <th className="p-3">Provider Status</th>
+                      <th className="p-3">Safaricom Receipt</th>
+                      <th className="p-3">Timestamp</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60 font-mono">
+                    {bookings.slice(0, 10).map((b) => (
+                      <tr key={b.id} className="hover:bg-slate-900/60">
+                        <td className="p-3 font-bold text-white">{b.bookingReference}</td>
+                        <td className="p-3 text-emerald-400 font-bold">{b.totalAmountKes.toLocaleString()}</td>
+                        <td className="p-3 text-slate-300">Channel #42</td>
+                        <td className="p-3">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                            b.paymentStatus === 'PAID' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-amber-950 text-amber-400 border border-amber-800'
+                          }`}>
+                            {b.paymentStatus === 'PAID' ? 'success (200)' : 'pending (201)'}
+                          </span>
+                        </td>
+                        <td className="p-3 text-slate-300">{b.mpesaReceiptNumber || 'MP-PENDING'}</td>
+                        <td className="p-3 text-slate-400">{new Date(b.createdAt).toLocaleTimeString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
           </div>
         )}
 
