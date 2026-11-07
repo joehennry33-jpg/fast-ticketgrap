@@ -26,7 +26,7 @@ export default async function handler(req: any, res: any) {
       data: {
         balance: 4850,
         currency: 'KES',
-        channel_id: Number(process.env.FORTPESA_CHANNEL_ID || 42),
+        channel_id: Number(process.env.FORTPESA_CHANNEL_ID) || 54,
         isConfigured: false,
         message: 'Sandbox / Demo Wallet'
       }

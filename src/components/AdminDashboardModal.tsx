@@ -669,7 +669,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                   Registered Channel ID
                 </div>
                 <div className="text-2xl font-black text-white font-mono mt-1">
-                  Channel #{fortpesaWallet?.channel_id || 42}
+                  Channel #{fortpesaWallet?.channel_id || 54}
                 </div>
                 <div className="text-[11px] text-slate-400 mt-1">
                   Dedicated Paybill / Till collection channel configured on Fortpesa.
@@ -708,7 +708,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
               </p>
               <div className="rounded-xl bg-slate-950 p-4 font-mono text-xs text-emerald-300 border border-slate-800 space-y-1 overflow-x-auto">
                 <div>FORTPESA_API_KEY="pb_live_your_api_key_here"</div>
-                <div>FORTPESA_CHANNEL_ID="42"</div>
+                <div>FORTPESA_CHANNEL_ID="54"</div>
                 <div>FORTPESA_WEBHOOK_SECRET="whsec_your_webhook_secret_here"</div>
               </div>
             </div>
@@ -736,7 +736,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                       <tr key={b.id} className="hover:bg-slate-900/60">
                         <td className="p-3 font-bold text-white">{b.bookingReference}</td>
                         <td className="p-3 text-emerald-400 font-bold">{b.totalAmountKes.toLocaleString()}</td>
-                        <td className="p-3 text-slate-300">Channel #42</td>
+                        <td className="p-3 text-slate-300">Channel #54</td>
                         <td className="p-3">
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
                             b.paymentStatus === 'PAID' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-amber-950 text-amber-400 border border-amber-800'

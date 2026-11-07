@@ -32,7 +32,14 @@ export default async function handler(req: any, res: any) {
     }
 
     const amount = Math.max(1, Math.round(Number(amountKes) || 1000));
-    const channelId = Number(process.env.FORTPESA_CHANNEL_ID || 42);
+    let rawChannel = process.env.FORTPESA_CHANNEL_ID;
+    let channelId = Number(rawChannel);
+
+    // If channelId is not a valid integer or was given as a UUID, use confirmed Channel ID 54
+    if (isNaN(channelId) || !channelId || channelId <= 0) {
+      channelId = 54;
+    }
+
     const accountRef = String(bookingReference || 'KP-NAI-001').replace(/[^a-zA-Z0-9]/g, '').slice(0, 12);
     const desc = String(description || 'AjaxBayern').replace(/[^a-zA-Z0-9]/g, '').slice(0, 13);
     const apiKey = process.env.FORTPESA_API_KEY;
@@ -64,9 +71,13 @@ export default async function handler(req: any, res: any) {
       }
 
       if (!fortpesaRes.ok) {
+        let errorMsg = responseData?.message || responseData?.error?.message || responseData?.error || `Fortpesa error (${fortpesaRes.status})`;
+        if (fortpesaRes.status === 402 || responseData?.error?.code === 'INSUFFICIENT_BALANCE') {
+          errorMsg = 'Fortpesa Error 402: Insufficient prepaid wallet balance (KES 0.00). Please top up your Fortpesa platform wallet in your Fortpesa dashboard to cover Safaricom fees.';
+        }
         return res.status(fortpesaRes.status).json({
           success: false,
-          message: responseData?.message || `Fortpesa error (${fortpesaRes.status})`,
+          message: errorMsg,
           details: responseData
         });
       }

@@ -47,6 +47,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [stkCountdown, setStkCountdown] = useState(25);
   const [fortpesaTxUuid, setFortpesaTxUuid] = useState<string>('');
   const [fortpesaStatus, setFortpesaStatus] = useState<FortpesaStatus>('pending');
+  const [isSimulatedTx, setIsSimulatedTx] = useState(false);
+  const [showStkHelp, setShowStkHelp] = useState(false);
   const [currentBooking, setCurrentBooking] = useState<Booking | null>(null);
   const [globalError, setGlobalError] = useState<string>('');
 
@@ -127,6 +129,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         const txUuid = res?.data?.uuid || `fp-${Date.now()}`;
         setFortpesaTxUuid(txUuid);
         setFortpesaStatus('pending');
+        setIsSimulatedTx(Boolean(res?.data?.isSimulated));
         setStkPushActive(true);
         setStkCountdown(25);
 
@@ -589,33 +592,83 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
                 {/* Live Fortpesa STK Push Status & Polling Dialog */}
                 {stkPushActive && (
-                  <div className="rounded-xl border border-emerald-500/60 bg-slate-900/90 p-4 text-center">
-                    <Loader2 className="h-8 w-8 text-emerald-400 animate-spin mx-auto mb-2" />
-                    <div className="text-sm font-bold text-white">
-                      Fortpesa M-PESA STK Prompt Sent to {formatKenyanPhone(mpesaNumber || customerPhone)}
+                  <div className="rounded-xl border border-emerald-500/60 bg-slate-900/95 p-4 text-center space-y-3">
+                    <Loader2 className="h-8 w-8 text-emerald-400 animate-spin mx-auto" />
+                    <div>
+                      <div className="text-sm font-bold text-white">
+                        Fortpesa M-PESA STK Prompt Sent to {formatKenyanPhone(mpesaNumber || customerPhone)}
+                      </div>
+                      <p className="text-xs text-slate-300 mt-1 max-w-sm mx-auto">
+                        Please unlock your phone screen and enter your 4-digit M-PESA PIN to authorize <strong className="text-emerald-300">KES {totalAmountKes.toLocaleString()}</strong>.
+                      </p>
                     </div>
-                    <p className="text-xs text-slate-300 mt-1 max-w-sm mx-auto">
-                      Please unlock your phone screen and enter your 4-digit M-PESA PIN to authorize <strong>KES {totalAmountKes.toLocaleString()}</strong>.
-                    </p>
+
+                    {isSimulatedTx && (
+                      <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 p-2.5 text-left text-[11px] text-amber-200">
+                        <div className="font-bold flex items-center gap-1.5 text-amber-300 mb-0.5">
+                          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                          <span>Developer Sandbox / Simulation Mode Active</span>
+                        </div>
+                        <p className="text-slate-300 leading-relaxed">
+                          No live Safaricom API key is configured yet in this environment. A physical prompt will only buzz on your real handset once a live <strong>FORTPESA_API_KEY</strong> (<code className="text-amber-300 font-mono">pb_live_...</code>) and <strong>FORTPESA_CHANNEL_ID</strong> are set in your server / Vercel environment variables.
+                        </p>
+                      </div>
+                    )}
 
                     {fortpesaTxUuid && (
-                      <div className="mt-2 text-[10px] font-mono text-slate-500">
+                      <div className="text-[10px] font-mono text-slate-500">
                         Fortpesa Ref: {fortpesaTxUuid}
                       </div>
                     )}
 
-                    <div className="mt-3 flex items-center justify-center gap-3">
+                    <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
                       <span className="text-xs font-mono text-emerald-400 font-bold">
                         Awaiting PIN ({stkCountdown}s)...
                       </span>
                       <button
                         type="button"
                         onClick={() => completePaymentVerification('MPESA_STK_PUSH')}
-                        className="rounded-lg bg-emerald-600/80 hover:bg-emerald-500 px-3 py-1 text-xs font-bold text-white transition-all cursor-pointer shadow-sm"
+                        className="rounded-lg bg-emerald-600 hover:bg-emerald-500 px-3.5 py-1.5 text-xs font-bold text-white transition-all cursor-pointer shadow-sm"
                       >
-                        I've Entered PIN (Verify Now)
+                        {isSimulatedTx ? 'Authorize Test Payment (Proceed)' : "I've Entered PIN (Verify Now)"}
                       </button>
                     </div>
+
+                    {/* Expandable Troubleshooting Checklist */}
+                    <div className="border-t border-slate-800 pt-2 text-left">
+                      <button
+                        type="button"
+                        onClick={() => setShowStkHelp(!showStkHelp)}
+                        className="text-[11px] font-semibold text-slate-400 hover:text-emerald-400 flex items-center justify-between w-full cursor-pointer py-1"
+                      >
+                        <span>Why haven't I received the STK prompt on my phone?</span>
+                        <span className="text-xs">{showStkHelp ? '▲' : '▼'}</span>
+                      </button>
+
+                      {showStkHelp && (
+                        <div className="mt-2 space-y-2 rounded-lg bg-slate-950 p-3 text-[11px] text-slate-300 border border-slate-800">
+                          <div className="font-bold text-white">Common reasons STK Push notifications fail:</div>
+                          <ul className="list-disc pl-4 space-y-1.5 text-slate-300">
+                            <li>
+                              <strong className="text-white">Missing Live API Key:</strong> Without a live <code className="text-amber-300 font-mono">FORTPESA_API_KEY</code> set in your environment, the system runs safely in sandbox test mode.
+                            </li>
+                            <li>
+                              <strong className="text-white">Active Safaricom Line:</strong> Only Kenyan Safaricom lines can receive M-PESA STK prompts (Airtel and Telkom SIMs do not support STK push; use Paybill instead).
+                            </li>
+                            <li>
+                              <strong className="text-white">Prepaid Fortpesa Wallet:</strong> Fortpesa requires a positive prepaid platform wallet balance (for Safaricom transaction fees). If empty, error 402 is returned.
+                            </li>
+                            <li>
+                              <strong className="text-white">Phone Screen / SIM Busy:</strong> Handset screen must be unlocked, phone not in flight mode, and no active call or USSD session (*544#, etc.) running.
+                            </li>
+                            <li>
+                              <strong className="text-white">Paybill Alternative:</strong> You can switch to the <strong>M-PESA Paybill</strong> tab above to pay directly via Paybill <strong className="text-white font-mono">522522</strong>.
+                            </li>
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+
                   </div>
                 )}
               </div>

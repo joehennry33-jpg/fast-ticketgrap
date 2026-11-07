@@ -18,15 +18,13 @@ export function formatKenyanPhone(phone: string): string {
 async function safeFetchJson<T>(url: string, options?: RequestInit): Promise<T | null> {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6500);
+    const timeoutId = setTimeout(() => controller.abort(), 8500);
 
     const res = await fetch(url, {
       ...options,
       signal: controller.signal
     });
     clearTimeout(timeoutId);
-
-    if (!res.ok) return null;
 
     const contentType = res.headers.get('content-type') || '';
     if (!contentType.includes('application/json')) return null;
@@ -319,8 +317,13 @@ export const api = {
       })
     });
 
-    if (res?.success && res.data) {
-      return res;
+    if (res) {
+      if (res.success && res.data) {
+        return res;
+      }
+      if (res.success === false && res.message) {
+        throw new Error(res.message);
+      }
     }
 
     // High-fidelity fallback simulation
@@ -374,7 +377,7 @@ export const api = {
     return {
       balance: 4850,
       currency: 'KES',
-      channel_id: 42,
+      channel_id: 54,
       isConfigured: false,
       message: 'Demo Wallet Mode'
     };
