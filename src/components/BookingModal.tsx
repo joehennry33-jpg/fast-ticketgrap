@@ -55,7 +55,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   if (!isOpen) return null;
 
   const currentCategory = categories.find(c => c.id === selectedCategoryId) || categories[0];
-  const totalAmountKes = currentCategory ? currentCategory.priceKes * quantity : 0;
+  const subtotalKes = currentCategory ? currentCategory.priceKes * quantity : 0;
+  const serviceFeeKes = Math.round(subtotalKes * 0.10);
+  const totalAmountKes = subtotalKes + serviceFeeKes;
 
   // Validate Step 1
   const handleProceedToReview = (e: React.FormEvent) => {
@@ -301,8 +303,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                     onChange={(e) => setQuantity(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
                     className="w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm text-white font-mono focus:border-red-500 focus:outline-none"
                   />
-                  <div className="text-xs text-slate-400 shrink-0">
-                    Total: <strong className="text-white font-mono">KES {(currentCategory.priceKes * quantity).toLocaleString()}</strong>
+                  <div className="text-xs text-slate-400 shrink-0 text-right">
+                    <div>Total (+10% fee):</div>
+                    <strong className="text-white font-mono">KES {totalAmountKes.toLocaleString()}</strong>
                   </div>
                 </div>
                 {formErrors.quantity && (
@@ -443,11 +446,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               <div className="space-y-1.5 text-xs">
                 <div className="flex justify-between text-slate-300">
                   <span>{currentCategory.name} (KES {currentCategory.priceKes.toLocaleString()} × {quantity})</span>
-                  <span className="font-mono">KES {(currentCategory.priceKes * quantity).toLocaleString()}</span>
+                  <span className="font-mono">KES {subtotalKes.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-slate-400">
-                  <span>M-PESA / Processing Surcharge:</span>
-                  <span className="text-emerald-400 font-mono">KES 0 (Promotional Waiver)</span>
+                  <span>Service & Processing Fee (10%):</span>
+                  <span className="text-amber-400 font-mono">+ KES {serviceFeeKes.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-base font-extrabold text-white pt-2 border-t border-slate-800">
                   <span>Total Payable:</span>

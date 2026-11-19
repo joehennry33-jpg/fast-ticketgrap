@@ -214,6 +214,8 @@ app.post('/api/bookings', (req: Request, res: Response) => {
   }
 
   const bookingRef = `KP-NAI-${Math.floor(10000 + Math.random() * 90000)}`;
+  const serviceFeeKes = Math.round(subtotalKes * 0.10);
+  const totalAmountKes = subtotalKes + serviceFeeKes;
   const newBooking: Booking = {
     id: `bkg-${crypto.randomUUID()}`,
     bookingReference: bookingRef,
@@ -224,8 +226,8 @@ app.post('/api/bookings', (req: Request, res: Response) => {
     customerIdNumber: customerIdNumber || 'N/A',
     totalTickets,
     subtotalKes,
-    serviceFeeKes: 0,
-    totalAmountKes: subtotalKes,
+    serviceFeeKes,
+    totalAmountKes,
     bookingStatus: 'PAYMENT_PENDING',
     paymentStatus: 'UNPAID',
     items: enrichedItems,

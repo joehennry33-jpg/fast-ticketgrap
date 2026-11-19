@@ -54,7 +54,7 @@ export const TicketSelectionSection: React.FC<TicketSelectionSectionProps> = ({ 
                     <span className="text-2xl sm:text-3xl font-black text-white font-mono tabular-nums">
                       KES {category.priceKes.toLocaleString()}
                     </span>
-                    <span className="text-xs text-slate-400">/ ticket</span>
+                    <span className="text-xs text-slate-400">/ ticket (+10% fee)</span>
                   </div>
 
                   {/* Description */}
@@ -135,7 +135,7 @@ export const TicketSelectionSection: React.FC<TicketSelectionSectionProps> = ({ 
           <div className="flex items-center gap-3 font-mono text-slate-400 text-[11px] shrink-0">
             <span>M-PESA STK PUSH INSTANT ISSUANCE</span>
             <span>·</span>
-            <span>NO HIDDEN SURCHARGES</span>
+            <span>+10% SERVICE FEE</span>
           </div>
         </div>
 

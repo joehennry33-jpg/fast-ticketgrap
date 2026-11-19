@@ -7,7 +7,9 @@ export default function handler(req: any, res: any) {
     const bookingRef = `KP-NAI-${Math.floor(10000 + Math.random() * 90000)}`;
 
     const items = body.items || [{ categoryId: 'cat-vip', categoryName: 'VIP Main Stand', quantity: 1, unitPriceKes: 12500, subtotalKes: 12500 }];
-    const subtotal = items.reduce((sum: number, it: any) => sum + (it.unitPriceKes * it.quantity || 12500), 0);
+    const subtotal = items.reduce((sum: number, it: any) => sum + ((it.unitPriceKes ?? 12500) * (it.quantity || 1)), 0);
+    const serviceFeeKes = Math.round(subtotal * 0.10);
+    const totalAmountKes = subtotal + serviceFeeKes;
 
     const booking = {
       id: `bkg-${Date.now()}`,
@@ -19,8 +21,8 @@ export default function handler(req: any, res: any) {
       customerIdNumber: body.customerIdNumber || 'N/A',
       totalTickets: items.reduce((sum: number, it: any) => sum + (it.quantity || 1), 0),
       subtotalKes: subtotal,
-      serviceFeeKes: 0,
-      totalAmountKes: subtotal,
+      serviceFeeKes,
+      totalAmountKes,
       bookingStatus: 'PAYMENT_PENDING',
       paymentStatus: 'UNPAID',
       items,

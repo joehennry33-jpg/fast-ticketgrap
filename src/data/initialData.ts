@@ -125,7 +125,7 @@ export const initialCategories: TicketCategory[] = [
     eventId: 'event-bayern-ajax-nairobi',
     name: 'Regular Upper Tier',
     code: 'REGULAR',
-    priceKes: 2500,
+    priceKes: 50,
     totalQuota: 22000,
     availableQuota: 16950,
     reservedQuota: 200,

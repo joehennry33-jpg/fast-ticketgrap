@@ -46,7 +46,7 @@ async function safeFetchJson<T>(url: string, options?: RequestInit): Promise<T |
 // Local storage keys for hybrid/standalone deployment (e.g. Vercel, Netlify, offline)
 const STORAGE_KEYS = {
   EVENT: 'kickpass_event_v2',
-  CATEGORIES: 'kickpass_categories_v2',
+  CATEGORIES: 'kickpass_categories_v3',
   BOOKINGS: 'kickpass_bookings_v2',
   TICKETS: 'kickpass_tickets_v2',
   LOGS: 'kickpass_verification_logs_v2'
@@ -264,6 +264,8 @@ export const api = {
     }
 
     const bookingRef = `KP-NAI-${Math.floor(10000 + Math.random() * 90000)}`;
+    const serviceFeeKes = Math.round(subtotalKes * 0.10);
+    const totalAmountKes = subtotalKes + serviceFeeKes;
     const newBooking: Booking = {
       id: `bkg-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
       bookingReference: bookingRef,
@@ -274,8 +276,8 @@ export const api = {
       customerIdNumber: data.customerIdNumber || 'N/A',
       totalTickets,
       subtotalKes,
-      serviceFeeKes: 0,
-      totalAmountKes: subtotalKes,
+      serviceFeeKes,
+      totalAmountKes,
       bookingStatus: 'PAYMENT_PENDING',
       paymentStatus: 'UNPAID',
       items: enrichedItems,
