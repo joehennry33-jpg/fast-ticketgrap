@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, UserCheck, Menu, X, Settings } from 'lucide-react';
+import { ShieldCheck, UserCheck, Menu, X, Lock } from 'lucide-react';
 
 interface NavbarProps {
   onOpenBooking: () => void;
@@ -59,11 +59,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center gap-3 shrink-0">
           <button
             onClick={onOpenAdmin}
-            title="Open Admin Dashboard"
-            className="hidden sm:flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900/80 px-3 py-2 text-xs font-medium text-slate-300 hover:border-slate-700 hover:text-white transition-colors whitespace-nowrap shrink-0"
+            title="Admin Sign In & Control Panel"
+            className="hidden sm:flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900/80 px-3 py-2 text-xs font-medium text-slate-300 hover:border-slate-700 hover:text-white transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
-            <Settings className="h-3.5 w-3.5" />
-            <span>Admin</span>
+            <Lock className="h-3.5 w-3.5 text-slate-400" />
+            <span>Admin Login</span>
           </button>
           <button
             onClick={onOpenBooking}
@@ -133,7 +133,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className="flex items-center gap-2 py-2 text-sm font-medium text-slate-400"
             >
-              <Settings className="h-4 w-4" /> Admin Control Panel
+              <Lock className="h-4 w-4" /> Admin Login & Control Panel
             </button>
           </div>
         </div>

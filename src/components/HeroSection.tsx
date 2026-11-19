@@ -69,13 +69,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ event, onBookTickets, 
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-        {/* Match Header Label & 61 Days Countdown Tag */}
+        {/* Match Header Label */}
         <div className="text-center max-w-3xl mx-auto mb-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-red-500/40 bg-red-950/70 px-4 py-1.5 text-xs font-black text-red-200 backdrop-blur-md mb-4 shadow-lg shadow-red-900/40">
             <span className="flex h-2.5 w-2.5 rounded-full bg-red-500 animate-ping" />
-            <span className="text-amber-300 font-extrabold uppercase tracking-widest">61 DAYS TO GO!</span>
-            <span className="text-slate-400">·</span>
-            <span>TUESDAY, 5 JANUARY 2027</span>
+            <span>TUESDAY, 5 JANUARY 2027 · NAIROBI, KENYA</span>
           </div>
 
           <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl text-balance">
@@ -118,20 +116,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ event, onBookTickets, 
                 </span>
               </div>
 
-              {/* 61 Days Countdown Notice */}
-              <div className="mt-4 inline-block rounded-md bg-red-600/20 border border-red-500/40 px-3 py-1 text-[11px] font-extrabold text-amber-300">
-                61 DAYS TO GO!
-              </div>
-
               {/* Countdown Grid */}
-              <div className="mt-3 w-full">
+              <div className="mt-4 w-full">
                 <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
                   Matchday Countdown (Kickoff 8:15 PM EAT)
                 </div>
                 <div className="grid grid-cols-4 gap-2 text-center">
                   <div className="rounded-lg bg-slate-950/80 border border-slate-800 p-2">
                     <div className="text-xl sm:text-2xl font-bold font-mono text-white tabular-nums">
-                      {String(timeLeft.days || 61).padStart(2, '0')}
+                      {String(timeLeft.days).padStart(2, '0')}
                     </div>
                     <div className="text-[10px] uppercase text-slate-400 font-semibold">Days</div>
                   </div>

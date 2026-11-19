@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
-import { X, Download, Printer, ShieldCheck, MapPin, Calendar, CheckCircle2, Loader2, FileText, Image as ImageIcon } from 'lucide-react';
+import { X, ArrowLeft, Download, Printer, ShieldCheck, MapPin, Calendar, CheckCircle2, Loader2, FileText, Image as ImageIcon } from 'lucide-react';
 import { Ticket } from '../types';
 import { TeamCrest } from './TeamCrest';
 
@@ -365,16 +365,29 @@ export const ElectronicTicketModal: React.FC<ElectronicTicketModalProps> = ({ is
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-md overflow-y-auto">
       <div className="relative w-full max-w-xl rounded-2xl bg-slate-900 border border-slate-800 text-slate-100 shadow-2xl my-6">
         
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-black/40 text-slate-400 hover:text-white cursor-pointer"
-        >
-          <X className="h-5 w-5" />
-        </button>
+        {/* Top Back & Close Bar */}
+        <div className="flex items-center justify-between px-6 sm:px-8 pt-5 pb-3 border-b border-slate-800/80 bg-slate-950 rounded-t-2xl">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:border-slate-700 hover:text-white transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span>Back</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close e-ticket"
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-slate-400 hover:text-white cursor-pointer"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
 
         {/* Printable Ticket Container */}
-        <div ref={printRef} className="p-6 sm:p-8 bg-slate-950 rounded-2xl border border-slate-800/80">
+        <div ref={printRef} className="p-6 sm:p-8 bg-slate-950">
           
           {/* Header Ticket Brand */}
           <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-5">
@@ -501,9 +514,17 @@ export const ElectronicTicketModal: React.FC<ElectronicTicketModalProps> = ({ is
           </div>
         </div>
 
-        {/* Action Controls: Direct Download & Print */}
+        {/* Action Controls: Back, Direct Download & Print */}
         <div className="p-4 sm:p-6 bg-slate-900/90 rounded-b-2xl border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
-          <div className="text-xs text-slate-400">
+          <div className="flex items-center gap-3 text-xs text-slate-400">
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-3.5 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-700 hover:text-white transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>Back</span>
+            </button>
             {downloadSuccess && (
               <span className="text-emerald-400 font-semibold flex items-center gap-1">
                 <CheckCircle2 className="h-4 w-4" /> Ticket file downloaded successfully!

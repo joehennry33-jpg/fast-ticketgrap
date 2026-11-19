@@ -31,7 +31,7 @@ export default async function handler(req: any, res: any) {
       data: {
         uuid: uuid || `fp-sim-${Date.now()}`,
         status: 'success',
-        amount: 12500,
+        amount: 200,
         phone: '254712345678',
         receipt_number: receipt,
         result_description: 'The service request is processed successfully.',

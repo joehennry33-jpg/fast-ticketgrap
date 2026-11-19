@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, Settings, DollarSign, Users, Ticket, BarChart3, Edit3, Save, Download, RotateCcw, AlertCircle, CheckCircle2, Video } from 'lucide-react';
+import { X, ArrowLeft, Settings, Save, Download, RotateCcw, AlertCircle, CheckCircle2, Video, Lock, LogOut, Eye, EyeOff, Shield, Loader2 } from 'lucide-react';
 import { MatchEvent, TicketCategory, Booking } from '../types';
-import { api } from '../services/api';
+import { api, AdminSession } from '../services/api';
 import { AnimatedStadiumShowcase } from './AnimatedStadiumShowcase';
 
 interface AdminDashboardModalProps {
@@ -23,6 +23,13 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
   onUpdateEvent,
   onUpdateCategories,
 }) => {
+  const [adminSession, setAdminSession] = useState<AdminSession | null>(() => api.getAdminSession());
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
   const [activeTab, setActiveTab] = useState<'overview' | 'stadium' | 'event' | 'categories' | 'bookings' | 'fortpesa'>('overview');
   const [fortpesaWallet, setFortpesaWallet] = useState<{ balance: number; currency: string; channel_id?: number; message?: string } | null>(null);
   const [loadingWallet, setLoadingWallet] = useState(false);
@@ -43,6 +50,13 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
   const [editableCategories, setEditableCategories] = useState<TicketCategory[]>(categories);
 
   useEffect(() => {
+    if (isOpen) {
+      setAdminSession(api.getAdminSession());
+      setLoginError('');
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     setEditableCategories(categories);
     setEventTitle(event.title);
     setEventDate(event.eventDate);
@@ -55,6 +69,140 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
   }, [event, categories]);
 
   if (!isOpen) return null;
+
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    setIsLoggingIn(true);
+    try {
+      const session = await api.loginAdmin(loginUsername, loginPassword);
+      setAdminSession(session);
+      setLoginPassword('');
+    } catch (err: any) {
+      setLoginError(err?.message || 'Invalid administrator email/username or password.');
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handleAdminLogout = async () => {
+    await api.logoutAdmin();
+    setAdminSession(null);
+    setLoginPassword('');
+    setLoginError('');
+  };
+
+  if (!adminSession) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-md overflow-y-auto">
+        <div className="relative w-full max-w-md rounded-2xl bg-slate-950 border border-slate-800 text-slate-100 shadow-2xl p-6 sm:p-8 my-6">
+          <div className="flex items-center justify-between mb-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:border-slate-700 hover:text-white transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>Back</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close login modal"
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-slate-400 hover:text-white cursor-pointer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="flex flex-col items-center text-center mb-6">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-600/15 border border-red-500/30 text-red-500 mb-4">
+              <Lock className="h-7 w-7" />
+            </div>
+            <div className="text-[11px] font-bold uppercase tracking-wider text-red-500 mb-1">
+              Restricted Operations Console
+            </div>
+            <h2 className="text-2xl font-black text-white">
+              Administrator Sign In
+            </h2>
+            <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+              Sign in with authorized KickPass Kenya administrator credentials to access pricing controls, revenue analytics, and Fortpesa gateway settings.
+            </p>
+          </div>
+
+          <form onSubmit={handleAdminLogin} className="space-y-4">
+            {loginError && (
+              <div className="flex items-start gap-2 rounded-xl border border-red-500/40 bg-red-950/50 p-3 text-xs text-red-200">
+                <AlertCircle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
+                <span>{loginError}</span>
+              </div>
+            )}
+
+            <div>
+              <label htmlFor="admin-username" className="block text-xs font-semibold text-slate-300 mb-1.5">
+                Administrator Email or Username
+              </label>
+              <input
+                id="admin-username"
+                type="text"
+                autoComplete="username"
+                required
+                value={loginUsername}
+                onChange={(e) => setLoginUsername(e.target.value)}
+                placeholder="admin@kickpass.co.ke"
+                className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:border-red-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="admin-password" className="block text-xs font-semibold text-slate-300 mb-1.5">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  id="admin-password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  required
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  placeholder="Enter administrator password"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-900 pl-3.5 pr-10 py-2.5 text-sm text-white placeholder-slate-500 focus:border-red-500 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  className="absolute inset-y-0 right-2.5 flex items-center text-slate-400 hover:text-white cursor-pointer"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoggingIn}
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-red-600/20 hover:bg-red-500 disabled:opacity-60 transition-all cursor-pointer"
+            >
+              {isLoggingIn ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Verifying Credentials...</span>
+                </>
+              ) : (
+                <>
+                  <Shield className="h-4 w-4" />
+                  <span>Sign In to Admin Panel</span>
+                </>
+              )}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   // Real-time Revenue Calculations
   const confirmedBookings = bookings.filter(b => b.paymentStatus === 'PAID');
@@ -80,7 +228,10 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
       setSaveSuccessMsg('Event configuration saved successfully!');
       setTimeout(() => setSaveSuccessMsg(''), 3000);
     } catch (err: any) {
-      setAdminErrorMsg('Failed to save event updates. Please check your network.');
+      if (String(err?.message || '').toLowerCase().includes('session') || String(err?.message || '').toLowerCase().includes('login') || String(err?.message || '').toLowerCase().includes('authorization')) {
+        setAdminSession(null);
+      }
+      setAdminErrorMsg(err?.message || 'Failed to save event updates. Please check your network.');
       setTimeout(() => setAdminErrorMsg(''), 4000);
     }
   };
@@ -105,7 +256,10 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
       setSaveSuccessMsg('Ticket tier prices and quotas updated successfully!');
       setTimeout(() => setSaveSuccessMsg(''), 3000);
     } catch (err: any) {
-      setAdminErrorMsg('Failed to save category updates. Please check your network.');
+      if (String(err?.message || '').toLowerCase().includes('session') || String(err?.message || '').toLowerCase().includes('login') || String(err?.message || '').toLowerCase().includes('authorization')) {
+        setAdminSession(null);
+      }
+      setAdminErrorMsg(err?.message || 'Failed to save category updates. Please check your network.');
       setTimeout(() => setAdminErrorMsg(''), 4000);
     }
   };
@@ -138,19 +292,51 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-md overflow-y-auto">
       <div className="relative w-full max-w-4xl rounded-2xl bg-slate-950 border border-slate-800 text-slate-100 shadow-2xl p-6 sm:p-8 my-6">
         
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-5 right-5 flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-slate-400 hover:text-white"
-        >
-          <X className="h-5 w-5" />
-        </button>
+        {/* Top Controls: Back + Sign Out + Close Button */}
+        <div className="flex items-center justify-between gap-2 mb-4">
+          <button
+            type="button"
+            onClick={() => {
+              if (activeTab !== 'overview') {
+                setActiveTab('overview');
+              } else {
+                onClose();
+              }
+            }}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900 px-3 h-8 text-xs font-semibold text-slate-300 hover:border-slate-700 hover:text-white transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span>{activeTab !== 'overview' ? 'Back to Overview' : 'Back to Home'}</span>
+          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleAdminLogout}
+              title="Sign Out & Lock Admin Console"
+              className="flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900 px-3 h-8 text-xs font-semibold text-slate-300 hover:border-red-500/40 hover:text-red-400 cursor-pointer"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close modal"
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-slate-400 hover:text-white cursor-pointer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
 
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4 mb-6">
           <div>
-            <div className="text-[11px] font-bold uppercase tracking-wider text-red-500 mb-0.5">
-              Operations Control Center
+            <div className="text-[11px] font-bold uppercase tracking-wider text-red-500 mb-0.5 flex items-center gap-2">
+              <span>Operations Control Center</span>
+              <span className="text-slate-600">·</span>
+              <span className="text-emerald-400 font-mono lowercase">{adminSession.username}</span>
             </div>
             <h2 className="text-2xl font-black text-white flex items-center gap-2">
               <Settings className="h-6 w-6 text-red-500" />

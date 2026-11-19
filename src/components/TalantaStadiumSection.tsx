@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Navigation, Car, Bus, Plane, CheckCircle2, Maximize2, X, Users, Sparkles, Shield, Clock, Calendar } from 'lucide-react';
+import { MapPin, Navigation, Car, Bus, Plane, CheckCircle2, Maximize2, X, ArrowLeft, Users, Sparkles, Shield, Clock, Calendar } from 'lucide-react';
 import { AnimatedStadiumShowcase } from './AnimatedStadiumShowcase';
 
 interface TalantaStadiumSectionProps {
@@ -58,10 +58,6 @@ export const TalantaStadiumSection: React.FC<TalantaStadiumSectionProps> = ({ on
           </p>
 
           <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-xs font-semibold">
-            <span className="flex items-center gap-1.5 rounded-full bg-red-600/30 border border-red-500/50 px-3 py-1 text-amber-300 font-bold">
-              <span className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
-              61 DAYS TO GO!
-            </span>
             <span className="flex items-center gap-1.5 rounded-full bg-slate-900 border border-slate-800 px-3 py-1 text-slate-300">
               <Calendar className="h-3.5 w-3.5 text-red-400" />
               Tuesday, 5 January 2027
@@ -257,12 +253,24 @@ export const TalantaStadiumSection: React.FC<TalantaStadiumSectionProps> = ({ on
       {activePhotoModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-md">
           <div className="relative max-w-5xl w-full">
-            <button
-              onClick={() => setActivePhotoModal(null)}
-              className="absolute -top-12 right-0 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/40 transition-colors"
-            >
-              <X className="h-6 w-6" />
-            </button>
+            <div className="flex items-center justify-between mb-3">
+              <button
+                type="button"
+                onClick={() => setActivePhotoModal(null)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-semibold text-white hover:bg-white/20 transition-colors cursor-pointer"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Back to Stadium Gallery</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActivePhotoModal(null)}
+                aria-label="Close photo preview"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/40 transition-colors cursor-pointer"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
             <img
               src={activePhotoModal}
               alt="Talanta Stadium Full Size"

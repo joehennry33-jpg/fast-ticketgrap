@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ShieldCheck, ShieldAlert, CheckCircle2, AlertTriangle, Scan, Search, Loader2 } from 'lucide-react';
+import { X, ArrowLeft, ShieldCheck, ShieldAlert, CheckCircle2, AlertTriangle, Scan, Search, Loader2 } from 'lucide-react';
 import { TicketVerificationResult } from '../types';
 import { api } from '../services/api';
 
@@ -47,13 +47,26 @@ export const GateScannerModal: React.FC<GateScannerModalProps> = ({ isOpen, onCl
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-md overflow-y-auto">
       <div className="relative w-full max-w-xl rounded-2xl bg-slate-950 border border-slate-800 text-slate-100 shadow-2xl p-6 sm:p-8 my-6">
         
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-5 right-5 flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-slate-400 hover:text-white"
-        >
-          <X className="h-5 w-5" />
-        </button>
+        {/* Top Bar: Back & Close Buttons */}
+        <div className="flex items-center justify-between mb-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:border-slate-700 hover:text-white transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span>Back to Home</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close gate scanner"
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-slate-400 hover:text-white cursor-pointer"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
 
         {/* Header */}
         <div className="mb-6 border-b border-slate-800 pb-4">

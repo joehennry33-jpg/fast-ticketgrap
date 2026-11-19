@@ -45,12 +45,20 @@ async function safeFetchJson<T>(url: string, options?: RequestInit): Promise<T |
 
 // Local storage keys for hybrid/standalone deployment (e.g. Vercel, Netlify, offline)
 const STORAGE_KEYS = {
-  EVENT: 'kickpass_event_v2',
-  CATEGORIES: 'kickpass_categories_v3',
-  BOOKINGS: 'kickpass_bookings_v2',
-  TICKETS: 'kickpass_tickets_v2',
-  LOGS: 'kickpass_verification_logs_v2'
+  EVENT: 'kickpass_event_v3',
+  CATEGORIES: 'kickpass_categories_v4',
+  BOOKINGS: 'kickpass_bookings_v3',
+  TICKETS: 'kickpass_tickets_v3',
+  LOGS: 'kickpass_verification_logs_v2',
+  ADMIN_SESSION: 'kickpass_admin_session_v1'
 };
+
+export interface AdminSession {
+  token: string;
+  username: string;
+  role: string;
+  expiresAt: number;
+}
 
 // Helper to safely load from localStorage with initial fallback
 function getLocalItem<T>(key: string, fallback: T): T {
@@ -111,7 +119,7 @@ const initialTickets: Ticket[] = [
     }),
     securityHash: 'sha256-vip-brian-7741-auth-valid',
     status: 'ISSUED',
-    priceKes: 12500,
+    priceKes: 200,
     eventDate: initialEvent.eventDate,
     venueName: initialEvent.venueName,
     createdAt: new Date().toISOString()
@@ -141,7 +149,7 @@ const initialTickets: Ticket[] = [
     status: 'CHECKED_IN',
     checkedInAt: '2026-11-04T15:20:00.000Z',
     checkedInGate: 'Gate B Turnstile 2',
-    priceKes: 12500,
+    priceKes: 200,
     eventDate: initialEvent.eventDate,
     venueName: initialEvent.venueName,
     createdAt: new Date().toISOString()
@@ -186,13 +194,98 @@ export const api = {
     return getLocalItem<MatchEvent>(STORAGE_KEYS.EVENT, initialEvent);
   },
 
+  // 1b. ADMIN SESSION & AUTHENTICATION
+  getAdminSession(): AdminSession | null {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEYS.ADMIN_SESSION);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as AdminSession;
+      if (!parsed?.token || !parsed?.expiresAt || Date.now() > parsed.expiresAt) {
+        sessionStorage.removeItem(STORAGE_KEYS.ADMIN_SESSION);
+        return null;
+      }
+      return parsed;
+    } catch {
+      return null;
+    }
+  },
+
+  async loginAdmin(username: string, password: string): Promise<AdminSession> {
+    const cleanUser = username.trim().toLowerCase();
+    if (!cleanUser || !password) {
+      throw new Error('Please enter both administrator email/username and password.');
+    }
+
+    const res = await safeFetchJson<{ success: boolean; message?: string; data?: AdminSession }>(
+      `${BASE_URL}/admin/login`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: cleanUser, password })
+      }
+    );
+
+    if (res) {
+      if (res.success && res.data) {
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem(STORAGE_KEYS.ADMIN_SESSION, JSON.stringify(res.data));
+        }
+        return res.data;
+      }
+      throw new Error(res.message || 'Invalid administrator username/email or password.');
+    }
+
+    // Purely static/offline fallback only when /api is unavailable
+    const validUser = cleanUser === 'admin@kickpass.co.ke' || cleanUser === 'superadmin';
+    const validPass = password === 'KickPass@2027';
+    if (!validUser || !validPass) {
+      throw new Error('Invalid administrator username/email or password.');
+    }
+
+    const offlineSession: AdminSession = {
+      token: `offline-${Date.now().toString(36)}`,
+      username: 'admin@kickpass.co.ke',
+      role: 'SUPER_ADMIN',
+      expiresAt: Date.now() + 4 * 60 * 60 * 1000
+    };
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(STORAGE_KEYS.ADMIN_SESSION, JSON.stringify(offlineSession));
+    }
+    return offlineSession;
+  },
+
+  async logoutAdmin(): Promise<void> {
+    const session = this.getAdminSession();
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem(STORAGE_KEYS.ADMIN_SESSION);
+    }
+    if (session?.token) {
+      safeFetchJson(`${BASE_URL}/admin/logout`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.token}` }
+      }).catch(() => {});
+    }
+  },
+
   // 2. UPDATE EVENT
   async updateEvent(id: string, updates: Partial<MatchEvent>): Promise<MatchEvent> {
-    const res = await safeFetchJson<{ data: MatchEvent }>(`${BASE_URL}/events/${id}`, {
+    const session = this.getAdminSession();
+    if (!session) {
+      throw new Error('Administrator session expired. Please sign in again.');
+    }
+
+    const res = await safeFetchJson<{ success?: boolean; message?: string; data?: MatchEvent }>(`${BASE_URL}/events/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.token}`
+      },
       body: JSON.stringify(updates)
     });
+    if (res?.success === false) {
+      throw new Error(res.message || 'Authorization failed.');
+    }
     if (res?.data) {
       setLocalItem(STORAGE_KEYS.EVENT, res.data);
       return res.data;
@@ -216,12 +309,29 @@ export const api = {
 
   // 4. UPDATE CATEGORY
   async updateCategory(id: string, updates: Partial<TicketCategory>): Promise<TicketCategory> {
-    const res = await safeFetchJson<{ data: TicketCategory }>(`${BASE_URL}/categories/${id}`, {
+    const session = this.getAdminSession();
+    if (!session) {
+      throw new Error('Administrator session expired. Please sign in again.');
+    }
+
+    const res = await safeFetchJson<{ success?: boolean; message?: string; data?: TicketCategory }>(`${BASE_URL}/categories/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.token}`
+      },
       body: JSON.stringify(updates)
     });
+    if (res?.success === false) {
+      throw new Error(res.message || 'Authorization failed.');
+    }
     if (res?.data) {
+      const categories = getLocalItem<TicketCategory[]>(STORAGE_KEYS.CATEGORIES, initialCategories);
+      const index = categories.findIndex(c => c.id === id);
+      if (index !== -1) {
+        categories[index] = res.data;
+        setLocalItem(STORAGE_KEYS.CATEGORIES, categories);
+      }
       return res.data;
     }
 
@@ -362,7 +472,7 @@ export const api = {
     return {
       uuid,
       status: 'success',
-      amount: 12500,
+      amount: 200,
       phone: '254712345678',
       receipt_number: `MP${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${Math.floor(10000000 + Math.random() * 90000000)}`,
       result_description: 'The service request is processed successfully.',

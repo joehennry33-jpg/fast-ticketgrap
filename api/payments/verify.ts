@@ -19,7 +19,7 @@ export default function handler(req: any, res: any) {
       customerEmail: body.customerEmail || 'supporter@kickpass.co.ke',
       customerPhone: body.mpesaPhone || '0712345678',
       totalTickets: 1,
-      totalAmountKes: 12500,
+      totalAmountKes: 220,
       bookingStatus: 'CONFIRMED',
       paymentStatus: 'PAID',
       paymentMethod: body.paymentMethod || 'MPESA_STK_PUSH',
@@ -40,7 +40,7 @@ export default function handler(req: any, res: any) {
           qrCodeSignature: JSON.stringify({ tkt: ticketNum, ref }),
           securityHash: `sha256-auth-${Date.now()}`,
           status: 'ISSUED',
-          priceKes: 12500,
+          priceKes: 200,
           eventDate: '2027-01-05T17:15:00.000Z',
           venueName: 'Raila Odinga International Stadium (Talanta Stadium)',
           createdAt: new Date().toISOString()

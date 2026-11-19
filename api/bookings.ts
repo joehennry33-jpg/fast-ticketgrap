@@ -6,8 +6,8 @@ export default function handler(req: any, res: any) {
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
     const bookingRef = `KP-NAI-${Math.floor(10000 + Math.random() * 90000)}`;
 
-    const items = body.items || [{ categoryId: 'cat-vip', categoryName: 'VIP Main Stand', quantity: 1, unitPriceKes: 12500, subtotalKes: 12500 }];
-    const subtotal = items.reduce((sum: number, it: any) => sum + ((it.unitPriceKes ?? 12500) * (it.quantity || 1)), 0);
+    const items = body.items || [{ categoryId: 'cat-vip', categoryName: 'VIP Main Stand', quantity: 1, unitPriceKes: 200, subtotalKes: 200 }];
+    const subtotal = items.reduce((sum: number, it: any) => sum + ((it.unitPriceKes ?? 200) * (it.quantity || 1)), 0);
     const serviceFeeKes = Math.round(subtotal * 0.10);
     const totalAmountKes = subtotal + serviceFeeKes;
 

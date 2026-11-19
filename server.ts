@@ -44,7 +44,7 @@ let ticketsData: Ticket[] = [
     }),
     securityHash: 'sha256-vip-brian-7741-auth-valid',
     status: 'ISSUED',
-    priceKes: 12500,
+    priceKes: 200,
     eventDate: initialEvent.eventDate,
     venueName: initialEvent.venueName,
     createdAt: new Date().toISOString()
@@ -74,7 +74,7 @@ let ticketsData: Ticket[] = [
     status: 'CHECKED_IN',
     checkedInAt: '2026-11-04T15:20:00.000Z',
     checkedInGate: 'Gate B Turnstile 2',
-    priceKes: 12500,
+    priceKes: 200,
     eventDate: initialEvent.eventDate,
     venueName: initialEvent.venueName,
     createdAt: new Date().toISOString()
@@ -98,9 +98,101 @@ let verificationLogs: any[] = [
   }
 ];
 
+// Active Admin Sessions Store
+interface AdminSessionRecord {
+  username: string;
+  role: string;
+  expiresAt: number;
+}
+const adminSessions = new Map<string, AdminSessionRecord>();
+
+function extractBearerToken(req: Request): string | null {
+  const auth = req.headers.authorization;
+  if (!auth || !auth.startsWith('Bearer ')) return null;
+  return auth.slice(7).trim();
+}
+
+function isValidAdminToken(token: string | null): AdminSessionRecord | null {
+  if (!token) return null;
+  const session = adminSessions.get(token);
+  if (!session) return null;
+  if (Date.now() > session.expiresAt) {
+    adminSessions.delete(token);
+    return null;
+  }
+  return session;
+}
+
+function requireAdminAuth(req: Request, res: Response, next: () => void) {
+  const token = extractBearerToken(req);
+  const session = isValidAdminToken(token);
+  if (!session) {
+    return res.status(401).json({
+      success: false,
+      message: 'Administrator login required to perform this operation.'
+    });
+  }
+  next();
+}
+
 // ==========================================
 // REST API ROUTES
 // ==========================================
+
+// Admin Login & Session Management
+app.post('/api/admin/login', (req: Request, res: Response) => {
+  const username = String(req.body?.username || '').trim().toLowerCase();
+  const password = String(req.body?.password || '');
+
+  const configuredUser = (process.env.ADMIN_USERNAME || 'admin@kickpass.co.ke').trim().toLowerCase();
+  const configuredPass = process.env.ADMIN_PASSWORD || 'KickPass@2027';
+
+  const validUser = username === configuredUser || username === 'superadmin';
+  const validPass = password.length > 0 && password === configuredPass;
+
+  if (!validUser || !validPass) {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid administrator username/email or password.'
+    });
+  }
+
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = Date.now() + 4 * 60 * 60 * 1000; // 4 hours
+  adminSessions.set(token, {
+    username: configuredUser,
+    role: 'SUPER_ADMIN',
+    expiresAt
+  });
+
+  return res.json({
+    success: true,
+    message: 'Administrator authenticated successfully.',
+    data: {
+      token,
+      username: configuredUser,
+      role: 'SUPER_ADMIN',
+      expiresAt
+    }
+  });
+});
+
+app.get('/api/admin/session', (req: Request, res: Response) => {
+  const token = extractBearerToken(req);
+  const session = isValidAdminToken(token);
+  if (!session) {
+    return res.status(401).json({ success: false, message: 'Not authenticated' });
+  }
+  return res.json({ success: true, data: session });
+});
+
+app.post('/api/admin/logout', (req: Request, res: Response) => {
+  const token = extractBearerToken(req);
+  if (token) {
+    adminSessions.delete(token);
+  }
+  return res.json({ success: true, message: 'Signed out successfully.' });
+});
 
 // Health check
 app.get('/api/health', (_req: Request, res: Response) => {
@@ -128,7 +220,7 @@ app.get('/api/events/:id', (req: Request, res: Response) => {
 });
 
 // Admin update event
-app.put('/api/events/:id', (req: Request, res: Response) => {
+app.put('/api/events/:id', requireAdminAuth, (req: Request, res: Response) => {
   const updates = req.body;
   eventData = {
     ...eventData,
@@ -152,7 +244,7 @@ app.get('/api/categories', (_req: Request, res: Response) => {
 });
 
 // Admin update category price/quota
-app.put('/api/categories/:id', (req: Request, res: Response) => {
+app.put('/api/categories/:id', requireAdminAuth, (req: Request, res: Response) => {
   const { id } = req.params;
   const updates = req.body;
   const index = categoriesData.findIndex(c => c.id === id);
@@ -760,7 +852,7 @@ app.get('/api/admin/stats', (_req: Request, res: Response) => {
 });
 
 // Reset / Seed helper
-app.post('/api/admin/reset-data', (_req: Request, res: Response) => {
+app.post('/api/admin/reset-data', requireAdminAuth, (_req: Request, res: Response) => {
   eventData = { ...initialEvent };
   categoriesData = initialCategories.map(c => ({ ...c }));
   bookingsData = [...sampleBookings];

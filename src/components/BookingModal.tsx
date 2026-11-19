@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, Check, ArrowRight, ShieldCheck, Phone, Mail, User, CreditCard, AlertCircle, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Check, ArrowLeft, ArrowRight, ShieldCheck, Phone, Mail, User, CreditCard, AlertCircle, Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { TicketCategory, Booking, MatchEvent, FortpesaStatus } from '../types';
 import { api, formatKenyanPhone } from '../services/api';
@@ -51,6 +51,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [showStkHelp, setShowStkHelp] = useState(false);
   const [currentBooking, setCurrentBooking] = useState<Booking | null>(null);
   const [globalError, setGlobalError] = useState<string>('');
+
+  useEffect(() => {
+    if (isOpen && initialCategoryId) {
+      setSelectedCategoryId(initialCategoryId);
+    }
+  }, [isOpen, initialCategoryId]);
 
   if (!isOpen) return null;
 
@@ -220,15 +226,35 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm overflow-y-auto">
       <div className="relative w-full max-w-2xl rounded-2xl border border-slate-800 bg-slate-950 p-6 sm:p-8 shadow-2xl text-slate-100 my-8">
         
-        {/* Modal Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-5 right-5 flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-slate-400 hover:text-white transition-colors"
-        >
-          <X className="h-5 w-5" />
-        </button>
+        {/* Modal Header with Top Back & Close Buttons */}
+        <div className="flex items-center justify-between mb-4">
+          <button
+            type="button"
+            onClick={() => {
+              if (step === 2) setStep(1);
+              else if (step === 3 && !isProcessing) {
+                setStkPushActive(false);
+                setStep(2);
+              } else {
+                onClose();
+              }
+            }}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:border-slate-700 hover:text-white transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span>{step === 2 || step === 3 ? 'Back' : 'Back to Page'}</span>
+          </button>
 
-        {/* Modal Header */}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close modal"
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-slate-400 hover:text-white transition-colors cursor-pointer"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
         <div className="mb-6 border-b border-slate-800 pb-4">
           <div className="text-[11px] font-bold uppercase tracking-wider text-red-500 mb-1">
             Ajax vs Bayern Munich · Talanta Stadium Ticket Booking
@@ -386,17 +412,18 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               {formErrors.phone && <p className="mt-1 text-xs text-red-400">{formErrors.phone}</p>}
             </div>
 
-            <div className="pt-4 border-t border-slate-800 flex justify-end gap-3">
+            <div className="pt-4 border-t border-slate-800 flex justify-between items-center gap-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-xl border border-slate-800 px-5 py-3 text-xs font-semibold text-slate-300 hover:bg-slate-900"
+                className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900/70 px-5 py-3 text-xs font-semibold text-slate-300 hover:bg-slate-900 hover:text-white transition-colors cursor-pointer"
               >
-                Cancel
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span>Back</span>
               </button>
               <button
                 type="submit"
-                className="flex items-center gap-2 rounded-xl bg-red-600 px-6 py-3 text-xs font-bold text-white hover:bg-red-500 active:scale-95"
+                className="flex items-center gap-2 rounded-xl bg-red-600 px-6 py-3 text-xs font-bold text-white hover:bg-red-500 active:scale-95 cursor-pointer"
               >
                 <span>Review Booking</span>
                 <ArrowRight className="h-4 w-4" />
@@ -468,15 +495,17 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
             <div className="flex justify-between items-center pt-2">
               <button
+                type="button"
                 onClick={() => setStep(1)}
-                className="text-xs text-slate-400 hover:text-white"
+                className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-2.5 text-xs font-semibold text-slate-300 hover:bg-slate-900 hover:text-white transition-colors cursor-pointer"
               >
-                ← Back to Edit Details
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span>Back to Edit Details</span>
               </button>
               <button
                 disabled={isProcessing}
                 onClick={handleProceedToPayment}
-                className="flex items-center gap-2 rounded-xl bg-red-600 px-6 py-3.5 text-xs font-bold text-white hover:bg-red-500 active:scale-95 disabled:opacity-50"
+                className="flex items-center gap-2 rounded-xl bg-red-600 px-6 py-3.5 text-xs font-bold text-white hover:bg-red-500 active:scale-95 disabled:opacity-50 cursor-pointer"
               >
                 {isProcessing ? (
                   <>
@@ -736,11 +765,16 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             {/* Action Buttons */}
             <div className="flex justify-between items-center pt-2">
               <button
-                onClick={() => setStep(2)}
+                type="button"
+                onClick={() => {
+                  setStkPushActive(false);
+                  setStep(2);
+                }}
                 disabled={isProcessing}
-                className="text-xs text-slate-400 hover:text-white disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-2.5 text-xs font-semibold text-slate-300 hover:bg-slate-900 hover:text-white disabled:opacity-50 transition-colors cursor-pointer"
               >
-                ← Back
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span>Back</span>
               </button>
 
               <button
@@ -801,6 +835,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-full sm:w-auto flex items-center justify-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900 px-6 py-3.5 text-xs font-semibold text-slate-200 hover:bg-slate-800 hover:text-white cursor-pointer"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span>Back to Match Page</span>
+              </button>
               <button
                 onClick={onClose}
                 className="w-full sm:w-auto rounded-xl bg-red-600 px-8 py-3.5 text-xs font-bold text-white hover:bg-red-500 cursor-pointer shadow-lg shadow-red-900/30"

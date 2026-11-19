@@ -31,7 +31,7 @@ export const initialEvent: MatchEvent = {
   slug: 'bayern-munich-vs-ajax-amsterdam-kenya-2027',
   homeTeam: initialTeams.bayern,
   awayTeam: initialTeams.ajax,
-  eventDate: '2027-01-05T17:15:00.000Z', // 8:15 PM EAT on Tuesday, 5 January 2027 (exactly 61 days from 5 Nov 2026)
+  eventDate: '2027-01-05T17:15:00.000Z', // 8:15 PM EAT on Tuesday, 5 January 2027
   kickoffTime: '8:15 PM (Kenyan time)',
   gatesOpenTime: '11:00 AM (Kenyan time)',
   venueName: 'Raila Odinga International Stadium (Talanta Stadium)',
@@ -54,56 +54,53 @@ export const initialEvent: MatchEvent = {
 
 export const initialCategories: TicketCategory[] = [
   {
-    id: 'cat-vvip',
+    id: 'cat-general',
     eventId: 'event-bayern-ajax-nairobi',
-    name: 'VVIP Presidential Hospitality',
-    code: 'VVIP',
-    priceKes: 25000,
-    totalQuota: 500,
-    availableQuota: 388,
-    reservedQuota: 12,
-    gateDesignation: 'Gate A (Presidential Pavilion)',
-    seatingArea: 'Presidential Suites & Tier 1 Center Box',
-    description: 'The premier luxury football hospitality experience at Raila Odinga Stadium. Elevated midfield vantage point with luxury padded seating and elite networking.',
+    name: 'General Admission (Curva Nets)',
+    code: 'GENERAL',
+    priceKes: 50,
+    totalQuota: 25000,
+    availableQuota: 19400,
+    reservedQuota: 350,
+    gateDesignation: 'Gate G & H (North & South Curves)',
+    seatingArea: 'Behind Goal Terraces (North & South Ends)',
+    description: 'The roaring heartbeat of Raila Odinga Stadium. Stand shoulder-to-shoulder with thousands of passionate fans chanting throughout the 90 minutes.',
     perks: [
-      'Private valet parking with secure VIP badge',
-      '5-course gourmet banquet & executive bar',
-      'Pre-match player tunnel observation lounge',
-      'Exclusive commemorative collectors match kit & scarf',
-      'Post-match press conference gallery access'
+      'Unmatched chanting fan ultras atmosphere',
+      'Direct view into goal nets and penalty boxes',
+      'Budget-friendly entry for students & youth clubs'
     ],
     isActive: true,
     sortOrder: 1,
-    colorHex: '#EAB308' // Gold
+    colorHex: '#10B981' // Green
   },
   {
-    id: 'cat-vip',
+    id: 'cat-regular',
     eventId: 'event-bayern-ajax-nairobi',
-    name: 'VIP Main Stand',
-    code: 'VIP',
-    priceKes: 12500,
-    totalQuota: 2500,
-    availableQuota: 1840,
-    reservedQuota: 45,
-    gateDesignation: 'Gate B (Executive West Stand)',
-    seatingArea: 'Main Grandstand Lower Tier (Halfway Line)',
-    description: 'Prime central halfway-line view. High-comfort padded seating with dedicated executive bar and expedited security turnstiles.',
+    name: 'Regular Upper Tier',
+    code: 'REGULAR',
+    priceKes: 100,
+    totalQuota: 22000,
+    availableQuota: 16950,
+    reservedQuota: 200,
+    gateDesignation: 'Gate D & F (Upper Concourse)',
+    seatingArea: 'Upper Bowl Elevated Grandstand',
+    description: 'Commanding tactical overview of the entire pitch. Watch defensive formations and attacks unfold from great panoramic height.',
     perks: [
-      'Halfway line center grandstand sightlines',
-      'Access to exclusive VIP indoor lounge & refreshments',
-      'Dedicated express security entry lanes (Gate B)',
-      'Complimentary official matchday glossy programme'
+      'Panoramic 360-degree stadium atmosphere view',
+      'Designated seat zone allocation',
+      'Multiple food concourses and restroom banks'
     ],
     isActive: true,
     sortOrder: 2,
-    colorHex: '#EF4444' // Red
+    colorHex: '#06B6D4' // Cyan
   },
   {
     id: 'cat-premium',
     eventId: 'event-bayern-ajax-nairobi',
     name: 'Premium Lower Bowl',
     code: 'PREMIUM',
-    priceKes: 5500,
+    priceKes: 150,
     totalQuota: 10000,
     availableQuota: 7820,
     reservedQuota: 120,
@@ -121,46 +118,49 @@ export const initialCategories: TicketCategory[] = [
     colorHex: '#3B82F6' // Blue
   },
   {
-    id: 'cat-regular',
+    id: 'cat-vip',
     eventId: 'event-bayern-ajax-nairobi',
-    name: 'Regular Upper Tier',
-    code: 'REGULAR',
-    priceKes: 50,
-    totalQuota: 22000,
-    availableQuota: 16950,
-    reservedQuota: 200,
-    gateDesignation: 'Gate D & F (Upper Concourse)',
-    seatingArea: 'Upper Bowl Elevated Grandstand',
-    description: 'Commanding tactical overview of the entire pitch. Watch defensive formations and attacks unfold from great panoramic height.',
+    name: 'VIP Main Stand',
+    code: 'VIP',
+    priceKes: 200,
+    totalQuota: 2500,
+    availableQuota: 1840,
+    reservedQuota: 45,
+    gateDesignation: 'Gate B (Executive West Stand)',
+    seatingArea: 'Main Grandstand Lower Tier (Halfway Line)',
+    description: 'Prime central halfway-line view. High-comfort padded seating with dedicated executive bar and expedited security turnstiles.',
     perks: [
-      'Panoramic 360-degree stadium atmosphere view',
-      'Designated seat zone allocation',
-      'Multiple food concourses and restroom banks'
+      'Halfway line center grandstand sightlines',
+      'Access to exclusive VIP indoor lounge & refreshments',
+      'Dedicated express security entry lanes (Gate B)',
+      'Complimentary official matchday glossy programme'
     ],
     isActive: true,
     sortOrder: 4,
-    colorHex: '#06B6D4' // Cyan
+    colorHex: '#EF4444' // Red
   },
   {
-    id: 'cat-general',
+    id: 'cat-vvip',
     eventId: 'event-bayern-ajax-nairobi',
-    name: 'General Admission (Curva Nets)',
-    code: 'GENERAL',
-    priceKes: 1000,
-    totalQuota: 25000,
-    availableQuota: 19400,
-    reservedQuota: 350,
-    gateDesignation: 'Gate G & H (North & South Curves)',
-    seatingArea: 'Behind Goal Terraces (North & South Ends)',
-    description: 'The roaring heartbeat of Raila Odinga Stadium. Stand shoulder-to-shoulder with thousands of passionate fans chanting throughout the 90 minutes.',
+    name: 'VVIP Presidential Hospitality',
+    code: 'VVIP',
+    priceKes: 250,
+    totalQuota: 500,
+    availableQuota: 388,
+    reservedQuota: 12,
+    gateDesignation: 'Gate A (Presidential Pavilion)',
+    seatingArea: 'Presidential Suites & Tier 1 Center Box',
+    description: 'The premier luxury football hospitality experience at Raila Odinga Stadium. Elevated midfield vantage point with luxury padded seating and elite networking.',
     perks: [
-      'Unmatched chanting fan ultras atmosphere',
-      'Direct view into goal nets and penalty boxes',
-      'Budget-friendly entry for students & youth clubs'
+      'Private valet parking with secure VIP badge',
+      '5-course gourmet banquet & executive bar',
+      'Pre-match player tunnel observation lounge',
+      'Exclusive commemorative collectors match kit & scarf',
+      'Post-match press conference gallery access'
     ],
     isActive: true,
     sortOrder: 5,
-    colorHex: '#10B981' // Green
+    colorHex: '#EAB308' // Gold
   }
 ];
 
@@ -174,9 +174,9 @@ export const sampleBookings: Booking[] = [
     customerPhone: '0712345678',
     customerIdNumber: '32984102',
     totalTickets: 2,
-    subtotalKes: 25000,
-    serviceFeeKes: 0,
-    totalAmountKes: 25000,
+    subtotalKes: 400,
+    serviceFeeKes: 40,
+    totalAmountKes: 440,
     bookingStatus: 'CONFIRMED',
     paymentStatus: 'PAID',
     paymentMethod: 'MPESA_STK_PUSH',
@@ -186,8 +186,8 @@ export const sampleBookings: Booking[] = [
         categoryId: 'cat-vip',
         categoryName: 'VIP Main Stand',
         quantity: 2,
-        unitPriceKes: 12500,
-        subtotalKes: 25000
+        unitPriceKes: 200,
+        subtotalKes: 400
       }
     ],
     createdAt: '2026-11-04T14:32:00.000Z'
